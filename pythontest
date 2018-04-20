@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr 20 11:42:01 2018
+
+@author: Koen
+"""
+
+import numpy as np
+
+n = 100
+mean = 1
+sigma = 0.1
+particles = np.array(n,dtype=None)
+
+def generate_particles(n):
+    return np.random.normal(mean,sigma,n)
+
+    
+particles = generate_particles(n)
+    
+print(generate_particles(n))
+print(particles.max())
+print(particles.min())
+
+
+
