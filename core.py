@@ -33,19 +33,14 @@ def initialize_system():
     # initialize positions
     system[:, COLUMN_REVERSE_MAPPING['x']] = lattice_x.flatten() 
     system[:, COLUMN_REVERSE_MAPPING['y']] = lattice_y.flatten()
+    
     for particle in range(N_PARTICLES):
-<<<<<<< HEAD
         system[particle,COLUMN_REVERSE_MAPPING['x']] = system[
                 particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
         system[particle,COLUMN_REVERSE_MAPPING['y']] = system[
-                particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
-        system[particle, COLUMN_REVERSE_MAPPING['orientation']] = np.radians(np.random.randint(0,90))
-
-=======
-        system[particle,COLUMN_REVERSE_MAPPING['x']] = system[particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
-        system[particle,COLUMN_REVERSE_MAPPING['y']] = system[particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
-        #print(system[:,COLUMN_REVERSE_MAPPING['x']] + np.random.rand()) 
->>>>>>> a4457b66f4694abc2e2f3c1b2956d63808107a41
+                particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand())
+        system[particle, COLUMN_REVERSE_MAPPING['orientation']] = (
+                                                        np.random.rand() * 45)
     # initialize radius
     system[:, COLUMN_REVERSE_MAPPING['r']] = np.random.normal(
         loc=MEAN_RADIUS,
@@ -56,25 +51,23 @@ def initialize_system():
 def plot_system(system):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-<<<<<<< HEAD
-    ax.set_xlim(-MEAN_RADUIS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
-                MEAN_RADUIS)
-    ax.set_ylim(-MEAN_RADUIS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
-                MEAN_RADUIS)
-    for x, y, r, theta in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
-=======
     ax.set_xlim(-MEAN_RADIUS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
                 MEAN_RADIUS)
     ax.set_ylim(-MEAN_RADIUS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
                 MEAN_RADIUS)
-    for x, y, r in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
->>>>>>> 004496b5f725225c1d779e205181b0c53e66f4b9
+    for x, y, r, angle in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
                        system[:, COLUMN_REVERSE_MAPPING['y']],
                        system[:, COLUMN_REVERSE_MAPPING['r']],
-                       system[:, COLUMN_REVERSE_MAPPING['orientation']]):
+                       system[:,COLUMN_REVERSE_MAPPING['orientation']]):
         #print('x',x,'y', y,'r', r)
-        circle = plt.Circle((x, y), radius=r)
+        circle = plt.Circle((x, y), radius=r, fill=False)
         ax.add_artist(circle)
+    #Draw radius arrow
+        head_length = 0.05
+        ax.arrow(x,y, (r-head_length) * np.cos(angle), 
+                         (r-head_length) * np.sin(angle), head_width=0.05, 
+                         head_length = head_length, fc='k', ec='k')
+        
 
 if __name__ == '__main__':
     system = initialize_system()
