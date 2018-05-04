@@ -19,7 +19,7 @@ LATTICE_CONSTANT = 2
 assert LATTICE_LENGTH * LATTICE_WIDTH == N_PARTICLES
 assert LATTICE_LENGTH > LATTICE_WIDTH
 
-MEAN_RADUIS = 1
+MEAN_RADIUS = 1
 STD_RADIUS = 1 / 10
 
 def initialize_system():
@@ -32,7 +32,7 @@ def initialize_system():
     system[:, COLUMN_REVERSE_MAPPING['y']] = lattice_y.flatten()
     # initialize radius
     system[:, COLUMN_REVERSE_MAPPING['r']] = np.random.normal(
-        loc=MEAN_RADUIS,
+        loc=MEAN_RADIUS,
         scale=STD_RADIUS,
         size=N_PARTICLES)
     return system
@@ -40,10 +40,10 @@ def initialize_system():
 def plot_system(system):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlim(-MEAN_RADUIS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
-                MEAN_RADUIS)
-    ax.set_ylim(-MEAN_RADUIS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
-                MEAN_RADUIS)
+    ax.set_xlim(-MEAN_RADIUS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
+                MEAN_RADIUS)
+    ax.set_ylim(-MEAN_RADIUS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
+                MEAN_RADIUS)
     for x, y, r in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
                        system[:, COLUMN_REVERSE_MAPPING['y']],
                        system[:, COLUMN_REVERSE_MAPPING['r']]):
