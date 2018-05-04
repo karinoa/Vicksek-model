@@ -37,7 +37,7 @@ def initialize_system():
     for particle in range(N_PARTICLES):
         system[particle,COLUMN_REVERSE_MAPPING['x']] = system[particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
         system[particle,COLUMN_REVERSE_MAPPING['y']] = system[particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
-        print(system[:,COLUMN_REVERSE_MAPPING['x']] + np.random.rand()) 
+        #print(system[:,COLUMN_REVERSE_MAPPING['x']] + np.random.rand()) 
     # initialize radius
     system[:, COLUMN_REVERSE_MAPPING['r']] = np.random.normal(
         loc=MEAN_RADIUS,
