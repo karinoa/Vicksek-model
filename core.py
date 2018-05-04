@@ -48,6 +48,13 @@ def initialize_system():
         size=N_PARTICLES)
     return system
 
+def get_orientations(system):
+    for x, y in zip(system[:,COLUMN_REVERSE_MAPPING['x']], 
+                    system[:,COLUMN_REVERSE_MAPPING['y']]):
+        
+        system[:,COLUMN_REVERSE_MAPPING['orientation']] = np.arctan2(y,x)
+    return system
+
 def plot_system(system):
     fig = plt.figure()
     ax = fig.add_subplot(111)
