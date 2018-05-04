@@ -34,12 +34,18 @@ def initialize_system():
     system[:, COLUMN_REVERSE_MAPPING['x']] = lattice_x.flatten() 
     system[:, COLUMN_REVERSE_MAPPING['y']] = lattice_y.flatten()
     for particle in range(N_PARTICLES):
+<<<<<<< HEAD
         system[particle,COLUMN_REVERSE_MAPPING['x']] = system[
                 particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
         system[particle,COLUMN_REVERSE_MAPPING['y']] = system[
                 particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
         system[particle, COLUMN_REVERSE_MAPPING['orientation']] = np.radians(np.random.randint(0,90))
 
+=======
+        system[particle,COLUMN_REVERSE_MAPPING['x']] = system[particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
+        system[particle,COLUMN_REVERSE_MAPPING['y']] = system[particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
+        #print(system[:,COLUMN_REVERSE_MAPPING['x']] + np.random.rand()) 
+>>>>>>> a4457b66f4694abc2e2f3c1b2956d63808107a41
     # initialize radius
     system[:, COLUMN_REVERSE_MAPPING['r']] = np.random.normal(
         loc=MEAN_RADIUS,
