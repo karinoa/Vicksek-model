@@ -4,9 +4,10 @@ import numpy as np
 COLUMN_MAPPING = {
     0: 'x',
     1: 'y',
-    3: 'r',
-    4: 'fx',
-    5: 'fy'
+    2: 'r',
+    3: 'fx',
+    4: 'fy',
+    5: 'orientation'
 }
 COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
@@ -26,18 +27,19 @@ def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
         slightly deviated from the exact lattice positions"""
     system = np.zeros((N_PARTICLES, N_COLUMNS))
-#    x_noise = np.random.rand(LATTICE_LENGTH) * STD_RADIUS
-#    y_noise = np.random.rand(LATTICE_WIDTH) * STD_RADIUS
-    length_positions = np.arange(LATTICE_LENGTH) * LATTICE_CONSTANT #+ x_noise
-    width_positions = np.arange(LATTICE_WIDTH) * LATTICE_CONSTANT #+ y_noise
+    length_positions = np.arange(LATTICE_LENGTH) * LATTICE_CONSTANT
+    width_positions = np.arange(LATTICE_WIDTH) * LATTICE_CONSTANT 
     lattice_x, lattice_y = np.meshgrid(length_positions, width_positions)
     # initialize positions
     system[:, COLUMN_REVERSE_MAPPING['x']] = lattice_x.flatten() 
     system[:, COLUMN_REVERSE_MAPPING['y']] = lattice_y.flatten()
     for particle in range(N_PARTICLES):
-        system[particle,COLUMN_REVERSE_MAPPING['x']] = system[particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
-        system[particle,COLUMN_REVERSE_MAPPING['y']] = system[particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
-        print(system[:,COLUMN_REVERSE_MAPPING['x']] + np.random.rand()) 
+        system[particle,COLUMN_REVERSE_MAPPING['x']] = system[
+                particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
+        system[particle,COLUMN_REVERSE_MAPPING['y']] = system[
+                particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
+        system[particle, COLUMN_REVERSE_MAPPING['orientation']] = np.radians(np.random.randint(0,90))
+
     # initialize radius
     system[:, COLUMN_REVERSE_MAPPING['r']] = np.random.normal(
         loc=MEAN_RADUIS,
@@ -52,9 +54,10 @@ def plot_system(system):
                 MEAN_RADUIS)
     ax.set_ylim(-MEAN_RADUIS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
                 MEAN_RADUIS)
-    for x, y, r in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
+    for x, y, r, theta in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
                        system[:, COLUMN_REVERSE_MAPPING['y']],
-                       system[:, COLUMN_REVERSE_MAPPING['r']]):
+                       system[:, COLUMN_REVERSE_MAPPING['r']],
+                       system[:, COLUMN_REVERSE_MAPPING['orientation']]):
         #print('x',x,'y', y,'r', r)
         circle = plt.Circle((x, y), radius=r)
         ax.add_artist(circle)
