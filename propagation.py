@@ -7,25 +7,27 @@ Created on Wed May  2 15:47:28 2018
 import numpy as np
 from core import *
 
-K = 2
+K = 2 #Spring constant
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 def Eulerpropstep(system):#positions,velocities, more?):
     distances,directions = get_distances(system)    #get distances between particles and the direction of that vector
-    neighbours = get_neighbours(system,distances)   #get neighbours of each particle
+    neighbours,k,l = get_neighbours(system,distances)#get neighbours of each particle
+    print(k,l)
     F = get_forces(system,distances, directions)
     #update position: position += timestep*velocity
     #check nearest neighbours and check if boundary (defined by angle > pi)
     #calculate average angle
     #calculate force: F = Fself + Fboundary + Frepulsion
     #update velocity: velocity += timestep*force
-    print(F[3])
+    #print(F[3])
     return #positions,velocities,angle?,forces
     
 def get_forces(system,distances,directions):
     forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
     for i in range(N_PARTICLES):
         for j in range(N_PARTICLES):
-            rsum = system[i,COLUMN_REVERSE_MAPPING['r']] + system[j,COLUMN_REVERSE_MAPPING['r']] #r1 + r2
+            rsum = system[i,COLUMN_REVERSE_MAPPING['r']] + (
+                                system[j,COLUMN_REVERSE_MAPPING['r']]) #r1 + r2
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
                 force_repulsion = -K* (rsum/dr - 1)*directions[i,j]
@@ -34,33 +36,47 @@ def get_forces(system,distances,directions):
     forcematrix += force_repulsion
     return forcematrix
     
-def get_neighbours(system,distances): #check nearest neighbours
-    neighbours = np.zeros(shape=(N_PARTICLES,N_PARTICLES), dtype = bool) #particles are neighbours if distance between centers is <= 2.7*MEAN_RADIUS    
+def get_neighbours(system,distances):
+    """Determines neighbours particles by comparing if 
+        the center to center distance is <= 2.7 * MEAN_RADIUS """
+        
+    neighbours = np.zeros(shape=(N_PARTICLES,N_PARTICLES), dtype = bool)
     for i in range(N_PARTICLES):
-        neighbours[i,i] = 'TRUE'
         for j in range(N_PARTICLES):
-            if distances[i,j] <= NEIGHBOUR_CUTOFF:
-                neighbours[i,j] = 'TRUE'
-    return neighbours
-    
-def Boundarycheck():
+            neighbours[i,j] = np.less_equal(distances[i,j],NEIGHBOUR_CUTOFF)
+            if neighbours[i,j] == True:
+                if np.logical_not(np.not_equal(i,j)) == False:
+                    k = np.arange(i)
+                    l = np.arange(j)
+                
+                    
+    return neighbours,k,l
+
+def Boundarycheck(system, k, l):
+
     #check if boundary (defined by angle > pi)
     return
 
 def get_distances(system):
     distancematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES))
     directionmatrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
+
     for i in range(N_PARTICLES): #for every particle
         distancematrix[i,i] = 0     #by definition
         directionmatrix[i,i] = 0
         for j in range(N_PARTICLES): #in relation to another particle
             if j != i:  #if they're not the same 
-                dx = system[j,COLUMN_REVERSE_MAPPING['x']]-system[i,COLUMN_REVERSE_MAPPING['x']]
-                dy = system[j,COLUMN_REVERSE_MAPPING['y']]-system[i,COLUMN_REVERSE_MAPPING['y']]
-                distancematrix[i,j] = np.sqrt((dx)**2 + (dy)**2)
+                dx = system[j,COLUMN_REVERSE_MAPPING['x']] - (
+                                        system[i,COLUMN_REVERSE_MAPPING['x']])
+                dy = system[j,COLUMN_REVERSE_MAPPING['y']] - (
+                                        system[i,COLUMN_REVERSE_MAPPING['y']])
+                distancematrix[i,j] = np.sqrt(np.power(dx,2) + np.power(dy,2))
+                
                 dx = dx / distancematrix[i,j]
                 dy = dy / distancematrix[i,j]
                 directionmatrix[i,j] = [dx,dy]
+                directionmatrix[j,i] = directionmatrix[i,j] * -1
+
     return distancematrix, directionmatrix
     
     

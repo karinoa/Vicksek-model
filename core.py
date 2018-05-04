@@ -51,7 +51,7 @@ def initialize_system():
 def get_orientations(system):
     for x, y in zip(system[:,COLUMN_REVERSE_MAPPING['x']], 
                     system[:,COLUMN_REVERSE_MAPPING['y']]):
-        
+
         system[:,COLUMN_REVERSE_MAPPING['orientation']] = np.arctan2(y,x)
     return system
 
@@ -74,8 +74,6 @@ def plot_system(system):
         ax.arrow(x,y, (r-head_length) * np.cos(angle), 
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
-        
-
 if __name__ == '__main__':
     system = initialize_system()
     plot_system(system)
