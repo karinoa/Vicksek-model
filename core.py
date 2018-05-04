@@ -21,18 +21,23 @@ assert LATTICE_LENGTH > LATTICE_WIDTH
 
 MEAN_RADIUS = 1
 STD_RADIUS = 1 / 10
-seed = np.random
 
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
         slightly deviated from the exact lattice positions"""
     system = np.zeros((N_PARTICLES, N_COLUMNS))
-    length_positions = np.arange(LATTICE_LENGTH) * LATTICE_CONSTANT + (np.random.rand() / STD_RADIUS)
-    width_positions = np.arange(LATTICE_WIDTH) * LATTICE_CONSTANT + (np.random.rand() / STD_RADIUS)
+#    x_noise = np.random.rand(LATTICE_LENGTH) * STD_RADIUS
+#    y_noise = np.random.rand(LATTICE_WIDTH) * STD_RADIUS
+    length_positions = np.arange(LATTICE_LENGTH) * LATTICE_CONSTANT #+ x_noise
+    width_positions = np.arange(LATTICE_WIDTH) * LATTICE_CONSTANT #+ y_noise
     lattice_x, lattice_y = np.meshgrid(length_positions, width_positions)
     # initialize positions
-    system[:, COLUMN_REVERSE_MAPPING['x']] = lattice_x.flatten()
+    system[:, COLUMN_REVERSE_MAPPING['x']] = lattice_x.flatten() 
     system[:, COLUMN_REVERSE_MAPPING['y']] = lattice_y.flatten()
+    for particle in range(N_PARTICLES):
+        system[particle,COLUMN_REVERSE_MAPPING['x']] = system[particle,COLUMN_REVERSE_MAPPING['x']] + (np.random.rand())
+        system[particle,COLUMN_REVERSE_MAPPING['y']] = system[particle,COLUMN_REVERSE_MAPPING['y']] + (np.random.rand() )
+        print(system[:,COLUMN_REVERSE_MAPPING['x']] + np.random.rand()) 
     # initialize radius
     system[:, COLUMN_REVERSE_MAPPING['r']] = np.random.normal(
         loc=MEAN_RADIUS,
