@@ -8,7 +8,7 @@ import numpy as np
 from core import *
 
 K = 2
-
+NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 def Eulerpropstep(system):#positions,velocities, more?):
     distances,directions = get_distances(system)    #get distances between particles and the direction of that vector
     neighbours = get_neighbours(system,distances)   #get neighbours of each particle
@@ -39,7 +39,7 @@ def get_neighbours(system,distances): #check nearest neighbours
     for i in range(N_PARTICLES):
         neighbours[i,i] = 'TRUE'
         for j in range(N_PARTICLES):
-            if distances[i,j]<=2.7*MEAN_RADIUS:
+            if distances[i,j] <= NEIGHBOUR_CUTOFF:
                 neighbours[i,j] = 'TRUE'
     return neighbours
     
