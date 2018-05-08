@@ -95,10 +95,32 @@ def get_neighbours(system,distances):
 
 def boundary_check(system, distances,neighbours_indexes):
     neighbours_distance = np.zeros((N_PARTICLES,N_PARTICLES))
-    for particle in range(N_PARTICLES):
-        for neighbour in neighbours_indexes:
-            print('the nieghbours of particle',particle,'are',neighbours_indexes)
-    return
+    for particle in neighbours_indexes:
+        for neighbour_a in range(len(particle)-1):
+            neighbour_b = neighbour_a + 1
+            #print('particle',particle,'one neighbour', particle[neighbour_a], 'the other neighbour', particle[neighbour_b])
+            x_dot_prod = (system[particle[neighbour_a],
+                                             COLUMN_REVERSE_MAPPING['x']] * ( 
+                            system[particle[neighbour_b],
+                                               COLUMN_REVERSE_MAPPING['x']]))
+def dot_product(system):
+    dot_prod = np.zeros((N_PARTICLES,2))
+    for i in range(N_PARTICLES):
+        for position_column  in range(0,1):
+            position_vector = system[i, COLUMN_REVERSE_MAPPING[position_column]].as_matrix(columns=[position_column])
+            dot_prod = position_vector * position_vector.T
+            print('jiji')
+        
+                    
+
+#def all_distances(system_state):
+#    distance_matrices = {}
+#    for position_column in SYSTEM_POSITION_COLUMNS:
+#        position_vector = system_state.as_matrix(columns=[position_column])
+#        distance_matrix = position_vector - position_vector.T
+#        distance_matrix = periodic_distance(distance_matrix)
+#        distance_matrices[position_column] = distance_matrix
+#    return
 
 
 # -----------Plotting--------------------------
@@ -116,7 +138,7 @@ def plot_system(system):
         #print('x',x,'y', y,'r', r)
         circle = plt.Circle((x, y), radius=r, fill=False)
         ax.add_artist(circle)
-    #Draw radius arrow
+    #Draw orientation arrow
         head_length = 0.05
         ax.arrow(x,y, (r-head_length) * np.cos(angle), 
                          (r-head_length) * np.sin(angle), head_width=0.05, 
@@ -126,5 +148,6 @@ if __name__ == '__main__':
     plot_system(system)
     plt.show()
     distances,directions = get_distances(system)
-    neighbour_indexes = get_neighbours(system,distances)
-#    boundary = boundary_check(system, distances, neighbour_indexes)
+    neighbours_indexes = get_neighbours(system,distances)
+    boundary = boundary_check(system, distances, neighbours_indexes)
+    dot_prod = dot_product(system)
