@@ -80,29 +80,25 @@ def get_distances(system):
 
     return distancematrix, directionmatrix
 
-#def get_neighbours(system, distances):
-#    neighbours_distance = np.zeros(N_PARTICLES)
-#    neighbours = np.zeros((N_PARTICLES,N_PARTICLES))
-#    for i in range(N_PARTICLES):
-#        for j in range(N_PARTICLES):
-#            if np.less_equal(distances[i,j], NEIGHBOUR_CUTOFF):
-#                if np.not_equal(distances[i,j],0.0):
-#                    neighbours[i,j] = distances[i,j]
-#                    print('for particle',i,'the neighbours are', j)
-#                    print(neighbours[i,j])
 
 def get_neighbours(system,distances):
     """Determines neighbouring particles by comparing if 
         the center to center distance is <= 2.7 * MEAN_RADIUS """
-    #vecinos = np.zeros(N_PARTICLES)
-    neighbours = np.zeros(shape=(N_PARTICLES,N_PARTICLES))
+    neighbours = np.zeros(shape=(N_PARTICLES,N_PARTICLES), dtype=bool)
+    neighbours_indexes = [[] for _ in range(N_PARTICLES)]
     for i in range(N_PARTICLES):
-        neighbours_indexes = []
         for j in range(N_PARTICLES):
             neighbours[i,j] = np.less_equal(distances[i,j],NEIGHBOUR_CUTOFF)
-            if neighbours[i,j] > 0.0 and distances[i,j] != 0.0:
-                neighbours_indexes.append(j)
-        print('the nieghbours of particle',i,'are',neighbours_indexes)
+            if neighbours[i,j] == True and distances[i,j] != 0.0:
+                neighbours_indexes[i].append(j)
+    return neighbours_indexes
+
+def boundary_check(system, distances,neighbours_indexes):
+    neighbours_distance = np.zeros((N_PARTICLES,N_PARTICLES))
+    for particle in range(N_PARTICLES):
+        for neighbour in neighbours_indexes:
+            print('the nieghbours of particle',particle,'are',neighbours_indexes)
+    return
 
 
 # -----------Plotting--------------------------
@@ -130,4 +126,5 @@ if __name__ == '__main__':
     plot_system(system)
     plt.show()
     distances,directions = get_distances(system)
-    neighbours = get_neighbours(system,distances)
+    neighbour_indexes = get_neighbours(system,distances)
+#    boundary = boundary_check(system, distances, neighbour_indexes)
