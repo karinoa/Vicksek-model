@@ -103,12 +103,14 @@ def boundary_check(system, directionmatrix,neighbours_indexes):
                                                        particle[neighbour_b]]
 
             dot_prod = np.dot(vector_a,vector_b)
-            angle_ab = np.rad2deg(np.arccos(dot_prod))
-            angle_out = np.rad2deg(np.pi) - angle_ab
+            angle_ab = np.arccos(dot_prod)
+            angle_out = np.rad2deg(np.pi - angle_ab)
             if angle_out < 180:
-                print('particle', neighbours_indexes.index(particle), 'is not on the boundary',angle_out)
+                print('particle', neighbours_indexes.index(particle), 
+                                          'is not on the boundary',angle_out)
             else:
-                print('particle',neighbours_indexes.index(particle),'its on the boundary',angle_out)
+                print('particle',neighbours_indexes.index(particle),
+                                              'its on the boundary',angle_out)
 
 # -----------Plotting--------------------------
 def plot_system(system):
