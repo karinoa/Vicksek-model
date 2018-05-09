@@ -93,35 +93,22 @@ def get_neighbours(system,distances):
                 neighbours_indexes[i].append(j)
     return neighbours_indexes
 
-def boundary_check(system, distances,neighbours_indexes):
-    neighbours_distance = np.zeros((N_PARTICLES,N_PARTICLES))
+def boundary_check(system, directionmatrix,neighbours_indexes):
     for particle in neighbours_indexes:
         for neighbour_a in range(len(particle)-1):
             neighbour_b = neighbour_a + 1
-            #print('particle',particle,'one neighbour', particle[neighbour_a], 'the other neighbour', particle[neighbour_b])
-            x_dot_prod = (system[particle[neighbour_a],
-                                             COLUMN_REVERSE_MAPPING['x']] * ( 
-                            system[particle[neighbour_b],
-                                               COLUMN_REVERSE_MAPPING['x']]))
-def dot_product(system):
-    dot_prod = np.zeros((N_PARTICLES,2))
-    for i in range(N_PARTICLES):
-        for position_column  in range(0,1):
-            position_vector = system[i, COLUMN_REVERSE_MAPPING[position_column]].as_matrix(columns=[position_column])
-            dot_prod = position_vector * position_vector.T
-            print('jiji')
-        
-                    
+            vector_a = directionmatrix[neighbours_indexes.index(particle),
+                                                       particle[neighbour_a]]
+            vector_b = directionmatrix[neighbours_indexes.index(particle),
+                                                       particle[neighbour_b]]
 
-#def all_distances(system_state):
-#    distance_matrices = {}
-#    for position_column in SYSTEM_POSITION_COLUMNS:
-#        position_vector = system_state.as_matrix(columns=[position_column])
-#        distance_matrix = position_vector - position_vector.T
-#        distance_matrix = periodic_distance(distance_matrix)
-#        distance_matrices[position_column] = distance_matrix
-#    return
-
+            dot_prod = np.dot(vector_a,vector_b)
+            angle_ab = np.rad2deg(np.arccos(dot_prod))
+            angle_out = np.rad2deg(np.pi) - angle_ab
+            if angle_out < 180:
+                print('particle', neighbours_indexes.index(particle), 'is not on the boundary',angle_out)
+            else:
+                print('particle',neighbours_indexes.index(particle),'its on the boundary',angle_out)
 
 # -----------Plotting--------------------------
 def plot_system(system):
@@ -149,5 +136,4 @@ if __name__ == '__main__':
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    boundary = boundary_check(system, distances, neighbours_indexes)
-    dot_prod = dot_product(system)
+    boundary = boundary_check(system, directions, neighbours_indexes)
