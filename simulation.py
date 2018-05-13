@@ -75,9 +75,9 @@ def get_distances(system):
                 
                 dx = dx / distancematrix[i,j]
                 dy = dy / distancematrix[i,j]
-                directionmatrix[i,j] = [dx,dy]
-                directionmatrix[j,i] = directionmatrix[i,j] * -1
-
+                directionmatrix[i,j] = [dx,dy] #matrix of unitary vectors
+                #Given the way you calculated them I think it's not needed
+                directionmatrix[j,i] = directionmatrix[i,j] * -1 
     return distancematrix, directionmatrix
 
 
@@ -93,25 +93,35 @@ def get_neighbours(system,distances):
                 neighbours_indexes[i].append(j)
     return neighbours_indexes
 
-def boundary_check(system, directionmatrix,neighbours_indexes):
+#def boundary_check(system, directionmatrix,neighbours_indexes):
+#    for particle in neighbours_indexes:
+#        for neighbour_a in range(len(particle)-1):
+#            neighbour_b = neighbour_a + 1
+#            vector_a = directionmatrix[neighbours_indexes.index(particle),
+#                                                       particle[neighbour_a]]
+#            vector_b = directionmatrix[neighbours_indexes.index(particle), 
+#                                                       particle[neighbour_b]]
+#            dot_prod = np.dot([vector_a[0],vector_a[1]],[vector_b[0],vector_b[1]])
+#            print([vector_a[0],vector_a[1]],[vector_b[0],vector_b[1]])
+#            angle_ab = np.arccos(dot_prod)
+#            angle_out = np.rad2deg(np.pi - angle_ab)
+#            angle_in = angle_ab / 2.
+#            if angle_out < 180:
+#                print('particle', neighbours_indexes.index(particle), 
+#                                          'is not on the boundary',angle_out)
+                
+def boundary_check(system, neighbours_indexes):
     for particle in neighbours_indexes:
         for neighbour_a in range(len(particle)-1):
-            neighbour_b = neighbour_a + 1
-            vector_a = directionmatrix[neighbours_indexes.index(particle),
-                                                       particle[neighbour_a]]
-            vector_b = directionmatrix[neighbours_indexes.index(particle),
-                                                       particle[neighbour_b]]
-
-            dot_prod = np.dot(vector_a,vector_b)
-            angle_ab = np.arccos(dot_prod)
-            angle_out = np.rad2deg(np.pi - angle_ab)
-            angle_in = angle_ab / 2.
-            if angle_out < 180:
-                print('particle', neighbours_indexes.index(particle), 
-                                          'is not on the boundary',angle_out)
-            else:
-                print('particle',neighbours_indexes.index(particle),
-                                              'its on the boundary',angle_out)
+            neighbour_b = neighbour_a +1
+            x1 = [neighbours_indexes.index(particle), COLUMN_REVERSE_MAPPING['x'] ]
+            x2 = [particle[neighbour_a], COLUMN_REVERSE_MAPPING['x']]
+            y1 = [neighbours_indexes.index(particle), COLUMN_REVERSE_MAPPING['y']]
+            y2 = [particle[neighbour_b], COLUMN_REVERSE_MAPPING['y']]
+            vector_a = (x1,y1)
+            vector_b = (x2,y2)
+            print(vector_a, vector_b)
+            
 
 # -----------Plotting--------------------------
 def plot_system(system):
@@ -139,4 +149,4 @@ if __name__ == '__main__':
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    boundary = boundary_check(system, directions, neighbours_indexes)
+    boundary = boundary_check(system, neighbours_indexes)
