@@ -24,14 +24,12 @@ def Eulerpropstep(system):#positions,velocities, more?):
 def get_forces(system,distances,directions):
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
-        force_self, force_boundary,force_repulsion = [0,0],[0,0],[0,0]
+        force_self, force_boundary,force_repulsion = [0.0,0.0],[0.0,0.0],[0.0,0.0]
         #calculate self-propulsion force
-        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
-        orientation = [np.cos(angle),np.sin(angle)]
-        vx = system[i,COLUMN_REVERSE_MAPPING['vx']] 
-        vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
-        force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
+        force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF
         #calculate boundary force
+        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+        orientation = [np.cos(angle),np.sin(angle)] 
         outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
         if np.greater_equal(outer_angle, 180.0):    #if particle is part of the boundary
             force_boundary = K_BOUNDARY*(outer_angle - 180.0)*orientation
@@ -45,9 +43,9 @@ def get_forces(system,distances,directions):
             if i!=j and dr <= rsum:
                 repulsion = -K_REPULSION*(rsum/dr - 1)*directions[i,j] #force on particle i by every other particle 
             else: repulsion = [0,0]
-            force_repulsion = np.sum(force_repulsion,repulsion)
+            force_repulsion = np.add(force_repulsion,repulsion)
             #calculate total force on particle
-        #forcematrix[i] = (force_self + force_boundary) + force_repulsion
+        forcematrix[i] = (force_self + force_boundary) + force_repulsion
     return 0#forcematrix
     
 def get_neighbours(system,distances): #determines neighbouring particles
