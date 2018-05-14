@@ -33,11 +33,13 @@ def get_forces(system,distances,directions):
             vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
             force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
             #calculate boundary force
-            if np.greater_equal(system[i,COLUMN_REVERSE_MAPPING['angle_boundary']], 180):    #if particle is part of the boundary
-                force_boundary = K_BOUNDARY*(system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]-180)*orientation
+            outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
+            if np.greater_equal(outer_angle, 180):    #if particle is part of the boundary
+                force_boundary = K_BOUNDARY*(outer_angle - 180)*orientation
             #calculate repulsion force
-            rsum = system[i,COLUMN_REVERSE_MAPPING['r']] + (    
-                                system[j,COLUMN_REVERSE_MAPPING['r']]) #r1 + r2
+            ri = system[i,COLUMN_REVERSE_MAPPING['r']]
+            rj = system[j,COLUMN_REVERSE_MAPPING['r']]
+            rsum = ri + rj
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
                 force_repulsion = -K_REPULSION* (rsum/dr - 1)*directions[i,j]
@@ -46,10 +48,7 @@ def get_forces(system,distances,directions):
             forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
     return forcematrix
     
-def get_neighbours(system,distances):
-    """Determines neighbours particles by comparing if 
-        the center to center distance is <= 2.7 * MEAN_RADIUS """
-        
+def get_neighbours(system,distances): #determines neighbouring particles
     neighbours = np.zeros(shape=(N_PARTICLES,N_PARTICLES), dtype = bool)
     for i in range(N_PARTICLES):
         for j in range(N_PARTICLES):
@@ -57,9 +56,7 @@ def get_neighbours(system,distances):
             if neighbours[i,j] == True:
                 if np.logical_not(np.not_equal(i,j)) == False:
                     k = np.arange(i)
-                    l = np.arange(j)
-                
-                    
+                    l = np.arange(j)  
     return neighbours,k,l
 
 def Boundarycheck(system, k, l):
@@ -81,12 +78,10 @@ def get_distances(system):
                 dy = system[j,COLUMN_REVERSE_MAPPING['y']] - (
                                         system[i,COLUMN_REVERSE_MAPPING['y']])
                 distancematrix[i,j] = np.sqrt(np.power(dx,2) + np.power(dy,2))
-                
                 dx = dx / distancematrix[i,j]
                 dy = dy / distancematrix[i,j]
                 directionmatrix[i,j] = [dx,dy]
                 directionmatrix[j,i] = directionmatrix[i,j] * -1
-
     return distancematrix, directionmatrix
     
     
