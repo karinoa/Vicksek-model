@@ -125,14 +125,13 @@ def get_forces(system,distances,directions):
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
         force_self, force_boundary,force_repulsion = [0.0,0.0],[0.0,0.0],[0.0,0.0]
+        fselfandboundary = [0.0,0.0]
         #calculate self-propulsion force
         force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF
         #calculate boundary force
-        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
-        orientation = [np.cos(angle),np.sin(angle)] 
         outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
         if np.greater_equal(outer_angle, 180.0):    #if particle is part of the boundary
-            force_boundary = K_BOUNDARY*(outer_angle - 180.0)*orientation
+            force_boundary = K_BOUNDARY*(outer_angle - 180.0)
         #calculate repulsion force
         repulsion = np.zeros(shape=(N_PARTICLES,2))
         for j in range(N_PARTICLES):
@@ -144,10 +143,13 @@ def get_forces(system,distances,directions):
                 repulsion = -K_REPULSION*(rsum/dr - 1)*directions[i,j] #force on particle i by every other particle 
             else: repulsion = [0,0]
             force_repulsion = np.add(force_repulsion,repulsion)
-        print(force_repulsion)
-            #calculate total force on particle
-        #forcematrix[i] = (force_self + force_boundary) + force_repulsion
-    return 0#forcematrix
+        #calculate total force on particle
+        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+        orientation = [np.cos(angle),np.sin(angle)] 
+        fselfandboundary[0] = (force_self + force_boundary)*orientation[0]
+        fselfandboundary[1] = (force_self + force_boundary)*orientation[1]
+        forcematrix[i] = np.add(fselfandboundary, force_repulsion)
+    return forcematrix
 
 #def get_torque(system):
 #    total_torque = np.zeros(N_PARTICLES)
@@ -191,4 +193,3 @@ if __name__ == '__main__':
     neighbours_indexes = get_neighbours(system,distances)
     update_angles, angles_out= update_angles(system,directions, neighbours_indexes)
 #    torque = get_torque(system)
-    print(get_forces(system,distances,directions))
