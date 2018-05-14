@@ -29,10 +29,14 @@ STD_RADIUS = 1 / 10
 K = 2 #Spring constant
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 
+TORQUE_IN = 1
+TORQUE_NOISE = 1
+TORQUE_ALIGN = 1
+
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
         slightly deviated from the exact lattice positions"""
-    system = np.zeros((N_PARTICLES, N_COLUMNS))
+    system = np.zeros((N_PARTICLES, N_COLUMNS), dtype = np.float64)
     length_positions = np.arange(LATTICE_LENGTH) * LATTICE_CONSTANT
     width_positions = np.arange(LATTICE_WIDTH) * LATTICE_CONSTANT 
     lattice_x, lattice_y = np.meshgrid(length_positions, width_positions)
@@ -131,18 +135,30 @@ def get_forces(system,distances,directions):
             #calculate boundary force
             outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
             if np.greater_equal(outer_angle, 180):    #if particle is part of the boundary
-                force_boundary = K_BOUNDARY*(outer_angle - 180)*orientation
+                force_boundary = K_BOUNDARY *(outer_angle - 180)*orientation
             #calculate repulsion force
             ri = system[i,COLUMN_REVERSE_MAPPING['r']]
             rj = system[j,COLUMN_REVERSE_MAPPING['r']]
             rsum = ri + rj
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
-                force_repulsion = -K_REPULSION* (rsum/dr - 1)*directions[i,j]
+                force_repulsion = -K_REPULSION * (rsum/dr - 1)*directions[i,j]
             else: force_repulsion = 0
             #calculate total force on particle
             forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
     return forcematrix
+
+#def get_torque(system):
+#    total_torque = np.zeros(N_PARTICLES)
+#    for particle in range(N_PARTICLES):
+#        noise = np.random.rand()
+#        heavy_side = (system[particle, COLUMN_REVERSE_MAPPING[
+#                                                    'angle_boundary']] - 180)
+#        if heavy_side > 0:
+#            total_torque[particle] = TORQUE_IN * (
+#                    system[particle, COLUMN_REVERSE_MAPPING['angle_delta']]) + (
+#                            TORQUE_NOISE * 1
+    
 
 # -----------Plotting--------------------------
 def plot_system(system):
@@ -173,3 +189,4 @@ if __name__ == '__main__':
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
     update_angles, angles_out= update_angles(system,directions, neighbours_indexes)
+#    torque = get_torque(system)
