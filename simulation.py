@@ -95,7 +95,7 @@ def get_neighbours(system,distances):
                 neighbours_indexes[i].append(j)
     return neighbours_indexes
 
-def boundary_check(system, directionmatrix,neighbours_indexes):
+def update_angles(system, directionmatrix,neighbours_indexes):
     angles_out = [[] for _ in range(N_PARTICLES)]
     for particle in neighbours_indexes:
         for neighbour_a in range(len(particle)-1):
@@ -110,11 +110,8 @@ def boundary_check(system, directionmatrix,neighbours_indexes):
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
     for particle in range(N_PARTICLES):
         if np.greater_equal(max(angles_out[particle]),180):
-            #print('the',particle,'is on the bound and the external angle is', max(angles_out[particle]))
             system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
-            system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = angle_boundary[particle] / 2.
-            
-    return angles_out
+            system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
@@ -141,4 +138,4 @@ if __name__ == '__main__':
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    angles_out = boundary_check(system,directions, neighbours_indexes)
+    update_angles = update_angles(system,directions, neighbours_indexes)
