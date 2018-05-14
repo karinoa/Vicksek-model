@@ -31,9 +31,13 @@ STD_RADIUS = 1 / 10
 K = 2 #Spring constant
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 
-TORQUE_IN = 1
-TORQUE_NOISE = 1
-TORQUE_ALIGN = 1
+K_SELF = 1.0 
+K_BOUNDARY = 1.0
+K_REPULSION = 1.0
+
+TORQUE_IN = 1.0
+TORQUE_NOISE = 1.0
+TORQUE_ALIGN = 1.0
 
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
@@ -111,28 +115,38 @@ def update_angles(system, directionmatrix,neighbours_indexes):
                                                    particle[neighbour_a]]
             vector_b = directionmatrix[neighbours_indexes.index(particle), 
                                                    particle[neighbour_b]]
-            dot_prod = np.dot([vector_a[0],vector_a[1]],[vector_b[0],vector_b[1]])
+            dot_prod = np.dot([vector_a[0],vector_a[1]],
+                              [vector_b[0],vector_b[1]])
             angle_ab = np.arccos(dot_prod)
             angle_out = np.rad2deg(2*np.pi - angle_ab)
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
-        
 
     for particle in range(N_PARTICLES):
-        system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle], default=360)
-        system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
-        system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- system[particle, COLUMN_REVERSE_MAPPING['orientation']]
+        system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = (
+                                    max(angles_out[particle], default=360))
+        system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = (
+            system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.)
+        system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = (
+                system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- (
+                system[particle, COLUMN_REVERSE_MAPPING['orientation']]))
+
     return system, angles_out
-    
+
 def get_forces(system,distances,directions):
+    """Calcultes the net force on each particle due to its self propulsion,
+        the boundary condition and the repulsion due to other particles"""
+
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
-        force_self, force_boundary,force_repulsion = [0.0,0.0],[0.0,0.0],[0.0,0.0]
+        force_self, force_boundary,force_repulsion = (
+                                                [0.0,0.0],[0.0,0.0],[0.0,0.0])
         fselfandboundary = [0.0,0.0]
         #calculate self-propulsion force
-        force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF
+        force_self = system[i,COLUMN_REVERSE_MAPPING['r']] * K_SELF
         #calculate boundary force
         outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
-        if np.greater_equal(outer_angle, 180.0):    #if particle is part of the boundary
+        #if particle is part of the boundary
+        if np.greater_equal(outer_angle, 180.0): 
             force_boundary = K_BOUNDARY*(outer_angle - 180.0)
         #calculate repulsion force
         repulsion = np.zeros(shape=(N_PARTICLES,2))
@@ -142,18 +156,20 @@ def get_forces(system,distances,directions):
             rsum = ri + rj
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
-                repulsion = -K_REPULSION*(rsum/dr - 1) * directions[i,j] #force on particle i by every other particle 
+                #force on particle i by every other particle
+                repulsion = -K_REPULSION*(rsum/dr - 1) * directions[i,j]
             else: repulsion = [0,0]
             force_repulsion = np.add(force_repulsion,repulsion)
         #calculate total force on particle
         angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
         orientation = [np.cos(angle),np.sin(angle)] 
-        fselfandboundary[0] = (force_self + force_boundary)*orientation[0]
-        fselfandboundary[1] = (force_self + force_boundary)*orientation[1]
+        fselfandboundary[0] = (force_self + force_boundary) * orientation[0]
+        fselfandboundary[1] = (force_self + force_boundary) * orientation[1]
         forcematrix[i] = np.add(fselfandboundary, force_repulsion)
     return forcematrix
     
 def get_torque(system, neighbours_indexes):
+    """ Calculates the net torque """
     torque_boundary = np.zeros(N_PARTICLES)
     torque_noise = np.zeros(N_PARTICLES)
     torque_align = np.zeros(N_PARTICLES)
@@ -163,7 +179,11 @@ def get_torque(system, neighbours_indexes):
         for neighbour_a in range(len(particle)-1):
             noise = uniform(-1,1)
             torque_noise[particle] = TORQUE_NOISE * noise
-            torque_align[particle] += (system[neighbours_indexes.index(particle), COLUMN_REVERSE_MAPPING['orientation']]- system[particle[neighbour_a], COLUMN_REVERSE_MAPPING['orientation']])
+            torque_align[particle] += (
+                                system[neighbours_indexes.index(particle),
+                                COLUMN_REVERSE_MAPPING['orientation']]-(
+                                system[particle[neighbour_a],
+                                COLUMN_REVERSE_MAPPING['orientation']]))
 
     for particle in range(N_PARTICLES):
         heavy_side = (system[particle, COLUMN_REVERSE_MAPPING[
@@ -179,7 +199,6 @@ def get_torque(system, neighbours_indexes):
                                         TORQUE_ALIGN * torque_align[particle])
 
     return torque_total
-
 
 # -----------Plotting--------------------------
 def plot_system(system):
@@ -209,6 +228,7 @@ if __name__ == '__main__':
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    update_angles, angles_out= update_angles(system,directions, neighbours_indexes)
+    update_angles, angles_out= update_angles(system,directions, 
+                                                         neighbours_indexes)
     force = get_forces(system, distances, directions)
     torque = get_torque(system, neighbours_indexes)
