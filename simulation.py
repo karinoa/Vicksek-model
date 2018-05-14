@@ -102,19 +102,20 @@ def update_angles(system, directionmatrix,neighbours_indexes):
         for neighbour_a in range(len(particle)-1):
             neighbour_b = neighbour_a + 1
             vector_a = directionmatrix[neighbours_indexes.index(particle),
-                                                       particle[neighbour_a]]
+                                                   particle[neighbour_a]]
             vector_b = directionmatrix[neighbours_indexes.index(particle), 
-                                                       particle[neighbour_b]]
+                                                   particle[neighbour_b]]
             dot_prod = np.dot([vector_a[0],vector_a[1]],[vector_b[0],vector_b[1]])
             angle_ab = np.arccos(dot_prod)
             angle_out = np.rad2deg(2*np.pi - angle_ab)
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
+        
 
     for particle in range(N_PARTICLES):
-        system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
+        system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle], default=360)
         system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
         system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- system[particle, COLUMN_REVERSE_MAPPING['orientation']]
-    return system
+    return system, angles_out
     
 def get_forces(system,distances,directions):
     forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
@@ -171,4 +172,4 @@ if __name__ == '__main__':
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    update_angles = update_angles(system,directions, neighbours_indexes)
+    update_angles, angles_out= update_angles(system,directions, neighbours_indexes)
