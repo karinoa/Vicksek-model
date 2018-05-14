@@ -1,18 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May  2 15:47:28 2018
-
-@author: Koen
-"""
 import numpy as np
 from core import *
 
 K = 2 #Spring constant
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
+RESCALED_VELOCITY = 1 #for now
+
 def Eulerpropstep(system):#positions,velocities, more?):
     distances,directions = get_distances(system)    #get distances between particles and the direction of that vector
     neighbours,k,l = get_neighbours(system,distances)#get neighbours of each particle
     print(k,l)
+    
     F = get_forces(system,distances, directions)
     #update position: position += timestep*velocity
     #check nearest neighbours and check if boundary (defined by angle > pi)
@@ -26,14 +23,21 @@ def get_forces(system,distances,directions):
     forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
     for i in range(N_PARTICLES):
         for j in range(N_PARTICLES):
-            rsum = system[i,COLUMN_REVERSE_MAPPING['r']] + (
+            #calculate self-propulsion force
+            force_self = system[i,COLUMN_REVERSE_MAPPING['r']]#*velocity of the particle
+            
+            #calculate boundary force
+            force_boundary = 0
+            
+            #calculate repulsion force
+            rsum = system[i,COLUMN_REVERSE_MAPPING['r']] + (    
                                 system[j,COLUMN_REVERSE_MAPPING['r']]) #r1 + r2
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
                 force_repulsion = -K* (rsum/dr - 1)*directions[i,j]
-
             else: force_repulsion = 0
-    forcematrix += force_repulsion
+            #calculate total force on particle
+            forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
     return forcematrix
     
 def get_neighbours(system,distances):
