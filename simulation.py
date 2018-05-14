@@ -111,46 +111,11 @@ def update_angles(system, directionmatrix,neighbours_indexes):
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
 
     for particle in range(N_PARTICLES):
-<<<<<<< HEAD
-        if np.greater_equal(max(angles_out[particle]),180):
-            #print('the',particle,'is on the bound and the external angle is', max(angles_out[particle]))
-            system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
-            system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = angle_boundary[particle] / 2.
-            
-    return angles_out
-    
-def get_forces(system,distances,directions):
-    forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
-    force_self, force_boundary, force_repulsion = np.zeros[2]
-    for i in range(N_PARTICLES):
-        for j in range(N_PARTICLES):
-            angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
-            orientation = [np.cos(angle),np.sin(angle)]
-            #calculate self-propulsion force
-            vx = system[i,COLUMN_REVERSE_MAPPING['vx']] 
-            vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
-            force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
-            #calculate boundary force
-            if np.greater_equal(system[i,COLUMN_REVERSE_MAPPING['angle_boundary']], 180):    #if particle is part of the boundary
-                force_boundary = K_BOUNDARY*(system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]-180)*orientation
-            #calculate repulsion force
-            rsum = system[i,COLUMN_REVERSE_MAPPING['r']] + (    
-                                system[j,COLUMN_REVERSE_MAPPING['r']]) #r1 + r2
-            dr = distances[i,j] #distance between particle centres
-            if i!=j and dr <= rsum:
-                force_repulsion = -K_REPULSION* (rsum/dr - 1)*directions[i,j]
-            else: force_repulsion = 0
-            #calculate total force on particle
-            forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
-    return forcematrix    
-    
-=======
         system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
         system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
         system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- system[particle, COLUMN_REVERSE_MAPPING['orientation']]
     return system
 
->>>>>>> e76bde5ed9ce91141f1094538a7fd2b9bb93fc39
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
