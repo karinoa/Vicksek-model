@@ -9,7 +9,8 @@ COLUMN_MAPPING = {
     4: 'vy',
     5: 'orientation',
     6: 'angle_boundary',
-    7: 'angle_in'
+    7: 'angle_in',
+    8: 'angle_delta'
 }
 COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
@@ -112,8 +113,9 @@ def update_angles(system, directionmatrix,neighbours_indexes):
     for particle in range(N_PARTICLES):
         system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
         system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
-            
-            
+        system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- system[particle, COLUMN_REVERSE_MAPPING['orientation']]
+    return system
+
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
