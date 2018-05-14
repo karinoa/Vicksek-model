@@ -5,8 +5,8 @@ COLUMN_MAPPING = {
     0: 'x',
     1: 'y',
     2: 'r',
-    3: 'fx',
-    4: 'fy',
+    3: 'vx',
+    4: 'vy',
     5: 'orientation',
     6: 'angle_boundary',
     7: 'angle_in'
@@ -110,8 +110,10 @@ def update_angles(system, directionmatrix,neighbours_indexes):
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
 
     for particle in range(N_PARTICLES):
-            system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
-            system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
+        system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
+        system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
+            
+            
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
@@ -132,6 +134,8 @@ def plot_system(system):
         ax.arrow(x,y, (r-head_length) * np.cos(angle), 
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
+
+# ------------Main------------------------------
 if __name__ == '__main__':
     system = initialize_system()
     plot_system(system)
