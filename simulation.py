@@ -122,31 +122,32 @@ def update_angles(system, directionmatrix,neighbours_indexes):
     return system, angles_out
     
 def get_forces(system,distances,directions):
-    forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
-    force_self, force_boundary, force_repulsion = np.zeros[2]
+    forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
+        force_self, force_boundary,force_repulsion = [0.0,0.0],[0.0,0.0],[0.0,0.0]
+        #calculate self-propulsion force
+        force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF
+        #calculate boundary force
+        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+        orientation = [np.cos(angle),np.sin(angle)] 
+        outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
+        if np.greater_equal(outer_angle, 180.0):    #if particle is part of the boundary
+            force_boundary = K_BOUNDARY*(outer_angle - 180.0)*orientation
+        #calculate repulsion force
+        repulsion = np.zeros(shape=(N_PARTICLES,2))
         for j in range(N_PARTICLES):
-            angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
-            orientation = [np.cos(angle),np.sin(angle)]
-            #calculate self-propulsion force
-            vx = system[i,COLUMN_REVERSE_MAPPING['vx']] 
-            vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
-            force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
-            #calculate boundary force
-            outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
-            if np.greater_equal(outer_angle, 180):    #if particle is part of the boundary
-                force_boundary = K_BOUNDARY *(outer_angle - 180)*orientation
-            #calculate repulsion force
             ri = system[i,COLUMN_REVERSE_MAPPING['r']]
             rj = system[j,COLUMN_REVERSE_MAPPING['r']]
             rsum = ri + rj
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
-                force_repulsion = -K_REPULSION * (rsum/dr - 1)*directions[i,j]
-            else: force_repulsion = 0
+                repulsion = -K_REPULSION*(rsum/dr - 1)*directions[i,j] #force on particle i by every other particle 
+            else: repulsion = [0,0]
+            force_repulsion = np.add(force_repulsion,repulsion)
+        print(force_repulsion)
             #calculate total force on particle
-            forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
-    return forcematrix
+        #forcematrix[i] = (force_self + force_boundary) + force_repulsion
+    return 0#forcematrix
 
 #def get_torque(system):
 #    total_torque = np.zeros(N_PARTICLES)
@@ -190,3 +191,4 @@ if __name__ == '__main__':
     neighbours_indexes = get_neighbours(system,distances)
     update_angles, angles_out= update_angles(system,directions, neighbours_indexes)
 #    torque = get_torque(system)
+    print(get_forces(system,distances,directions))
