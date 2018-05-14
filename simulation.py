@@ -108,8 +108,8 @@ def update_angles(system, directionmatrix,neighbours_indexes):
             angle_ab = np.arccos(dot_prod)
             angle_out = np.rad2deg(2*np.pi - angle_ab)
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
+
     for particle in range(N_PARTICLES):
-        if np.greater_equal(max(angles_out[particle]),180):
             system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
             system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
 # -----------Plotting--------------------------
