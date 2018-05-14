@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from random import uniform
+
 COLUMN_MAPPING = {
     0: 'x',
     1: 'y',
@@ -140,7 +142,7 @@ def get_forces(system,distances,directions):
             rsum = ri + rj
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
-                repulsion = -K_REPULSION*(rsum/dr - 1)*directions[i,j] #force on particle i by every other particle 
+                repulsion = -K_REPULSION*(rsum/dr - 1) * directions[i,j] #force on particle i by every other particle 
             else: repulsion = [0,0]
             force_repulsion = np.add(force_repulsion,repulsion)
         #calculate total force on particle
@@ -150,18 +152,34 @@ def get_forces(system,distances,directions):
         fselfandboundary[1] = (force_self + force_boundary)*orientation[1]
         forcematrix[i] = np.add(fselfandboundary, force_repulsion)
     return forcematrix
-
-#def get_torque(system):
-#    total_torque = np.zeros(N_PARTICLES)
-#    for particle in range(N_PARTICLES):
-#        noise = np.random.rand()
-#        heavy_side = (system[particle, COLUMN_REVERSE_MAPPING[
-#                                                    'angle_boundary']] - 180)
-#        if heavy_side > 0:
-#            total_torque[particle] = TORQUE_IN * (
-#                    system[particle, COLUMN_REVERSE_MAPPING['angle_delta']]) + (
-#                            TORQUE_NOISE * 1
     
+def get_torque(system, neighbours_indexes):
+    torque_boundary = np.zeros(N_PARTICLES)
+    torque_noise = np.zeros(N_PARTICLES)
+    torque_align = np.zeros(N_PARTICLES)
+    torque_total = np.zeros(N_PARTICLES)
+
+    for particle in neighbours_indexes:
+        for neighbour_a in range(len(particle)-1):
+            noise = uniform(-1,1)
+            torque_noise[particle] = TORQUE_NOISE * noise
+            torque_align[particle] += (system[neighbours_indexes.index(particle), COLUMN_REVERSE_MAPPING['orientation']]- system[particle[neighbour_a], COLUMN_REVERSE_MAPPING['orientation']])
+
+    for particle in range(N_PARTICLES):
+        heavy_side = (system[particle, COLUMN_REVERSE_MAPPING[
+                                                    'angle_boundary']] - 180)
+        if heavy_side > 0:
+            torque_boundary[particle] = TORQUE_IN * (
+                    system[particle, COLUMN_REVERSE_MAPPING['angle_delta']])
+        else:
+            torque_boundary[particle] = 0
+
+        torque_total[particle] = torque_boundary[particle] + (
+                                        torque_noise[particle]) + (
+                                        TORQUE_ALIGN * torque_align[particle])
+
+    return torque_total
+
 
 # -----------Plotting--------------------------
 def plot_system(system):
@@ -192,4 +210,5 @@ if __name__ == '__main__':
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
     update_angles, angles_out= update_angles(system,directions, neighbours_indexes)
-#    torque = get_torque(system)
+    force = get_forces(system, distances, directions)
+    torque = get_torque(system, neighbours_indexes)
