@@ -5,11 +5,12 @@ COLUMN_MAPPING = {
     0: 'x',
     1: 'y',
     2: 'r',
-    3: 'fx',
-    4: 'fy',
+    3: 'vx',
+    4: 'vy',
     5: 'orientation',
     6: 'angle_boundary',
-    7: 'angle_in'
+    7: 'angle_in',
+    8: 'angle_delta'
 }
 COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
@@ -95,7 +96,7 @@ def get_neighbours(system,distances):
                 neighbours_indexes[i].append(j)
     return neighbours_indexes
 
-def boundary_check(system, directionmatrix,neighbours_indexes):
+def update_angles(system, directionmatrix,neighbours_indexes):
     angles_out = [[] for _ in range(N_PARTICLES)]
     for particle in neighbours_indexes:
         for neighbour_a in range(len(particle)-1):
@@ -108,7 +109,9 @@ def boundary_check(system, directionmatrix,neighbours_indexes):
             angle_ab = np.arccos(dot_prod)
             angle_out = np.rad2deg(2*np.pi - angle_ab)
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
+
     for particle in range(N_PARTICLES):
+<<<<<<< HEAD
         if np.greater_equal(max(angles_out[particle]),180):
             #print('the',particle,'is on the bound and the external angle is', max(angles_out[particle]))
             system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
@@ -141,6 +144,13 @@ def get_forces(system,distances,directions):
             forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
     return forcematrix    
     
+=======
+        system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
+        system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
+        system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- system[particle, COLUMN_REVERSE_MAPPING['orientation']]
+    return system
+
+>>>>>>> e76bde5ed9ce91141f1094538a7fd2b9bb93fc39
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
@@ -161,10 +171,12 @@ def plot_system(system):
         ax.arrow(x,y, (r-head_length) * np.cos(angle), 
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
+
+# ------------Main------------------------------
 if __name__ == '__main__':
     system = initialize_system()
     plot_system(system)
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    angles_out = boundary_check(system,directions, neighbours_indexes)
+    update_angles = update_angles(system,directions, neighbours_indexes)
