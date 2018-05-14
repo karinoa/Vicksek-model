@@ -1,11 +1,11 @@
 import numpy as np
 from simulation import *
 
-K = 2 #Spring constant
+K = 2.0 #Spring constant
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
-K_SELF = 1 #for now
-K_BOUNDARY = 1
-K_REPULSION = 1
+K_SELF = 1.0 #for now
+K_BOUNDARY = 1.0
+K_REPULSION = 1.0
 
 def Eulerpropstep(system):#positions,velocities, more?):
     distances,directions = get_distances(system)    #get distances between particles and the direction of that vector
@@ -22,31 +22,33 @@ def Eulerpropstep(system):#positions,velocities, more?):
     return #positions,velocities,angle?,forces
     
 def get_forces(system,distances,directions):
-    forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
-    force_self, force_boundary, force_repulsion = np.zeros[2]
+    forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
+        force_self, force_boundary,force_repulsion = [0,0],[0,0],[0,0]
+        #calculate self-propulsion force
+        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+        orientation = [np.cos(angle),np.sin(angle)]
+        vx = system[i,COLUMN_REVERSE_MAPPING['vx']] 
+        vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
+        force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
+        #calculate boundary force
+        outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
+        if np.greater_equal(outer_angle, 180.0):    #if particle is part of the boundary
+            force_boundary = K_BOUNDARY*(outer_angle - 180.0)*orientation
+        #calculate repulsion force
+        repulsion = np.zeros(shape=(N_PARTICLES,2))
         for j in range(N_PARTICLES):
-            angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
-            orientation = [np.cos(angle),np.sin(angle)]
-            #calculate self-propulsion force
-            vx = system[i,COLUMN_REVERSE_MAPPING['vx']] 
-            vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
-            force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
-            #calculate boundary force
-            outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
-            if np.greater_equal(outer_angle, 180):    #if particle is part of the boundary
-                force_boundary = K_BOUNDARY*(outer_angle - 180)*orientation
-            #calculate repulsion force
             ri = system[i,COLUMN_REVERSE_MAPPING['r']]
             rj = system[j,COLUMN_REVERSE_MAPPING['r']]
             rsum = ri + rj
             dr = distances[i,j] #distance between particle centres
             if i!=j and dr <= rsum:
-                force_repulsion = -K_REPULSION* (rsum/dr - 1)*directions[i,j]
-            else: force_repulsion = 0
+                repulsion = -K_REPULSION*(rsum/dr - 1)*directions[i,j] #force on particle i by every other particle 
+            else: repulsion = [0,0]
+            force_repulsion = np.sum(force_repulsion,repulsion)
             #calculate total force on particle
-            forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
-    return forcematrix
+        #forcematrix[i] = (force_self + force_boundary) + force_repulsion
+    return 0#forcematrix
     
 def get_neighbours(system,distances): #determines neighbouring particles
     neighbours = np.zeros(shape=(N_PARTICLES,N_PARTICLES), dtype = bool)
