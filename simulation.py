@@ -115,6 +115,33 @@ def update_angles(system, directionmatrix,neighbours_indexes):
         system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] / 2.
         system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- system[particle, COLUMN_REVERSE_MAPPING['orientation']]
     return system
+    
+def get_forces(system,distances,directions):
+    forcematrix = np.zeros(shape=(N_PARTICLES,N_PARTICLES,2))
+    force_self, force_boundary, force_repulsion = np.zeros[2]
+    for i in range(N_PARTICLES):
+        for j in range(N_PARTICLES):
+            angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+            orientation = [np.cos(angle),np.sin(angle)]
+            #calculate self-propulsion force
+            vx = system[i,COLUMN_REVERSE_MAPPING['vx']] 
+            vy = system[i,COLUMN_REVERSE_MAPPING['vy']] 
+            force_self = system[i,COLUMN_REVERSE_MAPPING['r']]*K_SELF*[vx,vy]
+            #calculate boundary force
+            outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
+            if np.greater_equal(outer_angle, 180):    #if particle is part of the boundary
+                force_boundary = K_BOUNDARY*(outer_angle - 180)*orientation
+            #calculate repulsion force
+            ri = system[i,COLUMN_REVERSE_MAPPING['r']]
+            rj = system[j,COLUMN_REVERSE_MAPPING['r']]
+            rsum = ri + rj
+            dr = distances[i,j] #distance between particle centres
+            if i!=j and dr <= rsum:
+                force_repulsion = -K_REPULSION* (rsum/dr - 1)*directions[i,j]
+            else: force_repulsion = 0
+            #calculate total force on particle
+            forcematrix[i,j] = (force_self + force_boundary + force_repulsion)*system
+    return forcematrix
 
 # -----------Plotting--------------------------
 def plot_system(system):
