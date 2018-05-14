@@ -8,7 +8,7 @@ COLUMN_MAPPING = {
     3: 'fx',
     4: 'fy',
     5: 'orientation',
-    6: 'angle_out',
+    6: 'angle_boundary',
     7: 'angle_in'
 }
 COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
@@ -105,17 +105,16 @@ def boundary_check(system, directionmatrix,neighbours_indexes):
             vector_b = directionmatrix[neighbours_indexes.index(particle), 
                                                        particle[neighbour_b]]
             dot_prod = np.dot([vector_a[0],vector_a[1]],[vector_b[0],vector_b[1]])
-#            print([vector_a[0],vector_a[1]],[vector_b[0],vector_b[1]])
             angle_ab = np.arccos(dot_prod)
             angle_out = np.rad2deg(2*np.pi - angle_ab)
             angles_out[neighbours_indexes.index(particle)].append(angle_out)
-#            if angle_out > 180:
-#                print('particle', neighbours_indexes.index(particle), 
-#                                          'is on the boundary', np.rad2deg(angle_ab))
     for particle in range(N_PARTICLES):
-        system[particle, COLUMN_REVERSE_MAPPING['angle_out']]= max(angles_out[particle])
-        system[particle, COLUMN_REVERSE_MAPPING['angle_in']] = outter_angle / 2.
-    return angles_out, outter_angle
+        if np.greater_equal(max(angles_out[particle]),180):
+            #print('the',particle,'is on the bound and the external angle is', max(angles_out[particle]))
+            system[particle, COLUMN_REVERSE_MAPPING['angle_boundary']] = max(angles_out[particle])
+            system[particle,COLUMN_REVERSE_MAPPING['angle_in']] = angle_boundary[particle] / 2.
+            
+    return angles_out
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
@@ -142,4 +141,4 @@ if __name__ == '__main__':
     plt.show()
     distances,directions = get_distances(system)
     neighbours_indexes = get_neighbours(system,distances)
-    angles_out, outter_angle = boundary_check(system,directions, neighbours_indexes)
+    angles_out = boundary_check(system,directions, neighbours_indexes)
