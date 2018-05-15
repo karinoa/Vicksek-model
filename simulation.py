@@ -254,6 +254,10 @@ def update_orientation(system, time_step):
     return system
 
 #---------------Observables------------------------------
+    #okay so the calculation makes sense cuz cos^2+sen^2 = 1 -> 1/N_part = 0.009
+    #so obviously I'm not understandig how to calculate the order parameter. 
+    #According to the paper is the sum of the orientation vectors, which would 
+    #give a vector, not a number.
 def get_order_parameter(system):
     """Calculates the orientational order parameter. The behaviour of the 
         system can be determined from it. A high order parameter it's 
@@ -266,7 +270,7 @@ def get_order_parameter(system):
                             np.sum(orientation[0]),2) + np.power(
                             np.sum(orientation[1]),2))
 
-    order_parameter = 1 / N_PARTICLES * orientation_sum
+        order_parameter = 1 / N_PARTICLES * orientation_sum
     return order_parameter
 #---------------- Simulation-----------------------------
 def simulation_loop(system):
@@ -284,10 +288,11 @@ def simulation_loop(system):
         updt_velocities = update_velocity(system, forces, torques, time_step)
         updt_position = update_position(updt_velocities, time_step)
         updt_orientation = update_orientation(updt_position, time_step)
+        order_parameter = get_order_parameter(updt_orientation)
         
         if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
             print('Step',step)
-            order_parameter = get_order_parameter(updt_orientation)
+
             print(order_parameter)
             plot_system(updt_orientation)
             plt.show()
