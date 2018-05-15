@@ -259,10 +259,12 @@ def get_order_parameter(system):
         system can be determined from it. A high order parameter it's 
         migration while a low is jammed or rotating"""
 
-    for i in range(N_PARTICLES):
-        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+    for particle in range(N_PARTICLES):
+        angle = system[particle,COLUMN_REVERSE_MAPPING['orientation']]
         orientation = [np.cos(angle),np.sin(angle)]
-        orientation_sum = np.sqrt(np.power(np.sum(orientation[0]),2) + np.power(np.sum(orientation[1]),2))
+        orientation_sum = np.sqrt(np.power(
+                            np.sum(orientation[0]),2) + np.power(
+                            np.sum(orientation[1]),2))
 
     order_parameter = 1 / N_PARTICLES * orientation_sum
     return order_parameter
@@ -285,7 +287,7 @@ def simulation_loop(system):
         
         if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
             print('Step',step)
-            order_parameter = get_order_parameter(update_orientation)
+            order_parameter = get_order_parameter(updt_orientation)
             print(order_parameter)
             plot_system(updt_orientation)
             plt.show()
