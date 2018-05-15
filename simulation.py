@@ -9,10 +9,11 @@ COLUMN_MAPPING = {
     2: 'r',
     3: 'vx',
     4: 'vy',
-    5: 'orientation',
-    6: 'angle_boundary',
-    7: 'angle_in',
-    8: 'angle_delta'
+    5: 'v_angular',
+    6: 'orientation',
+    7: 'angle_boundary',
+    8: 'angle_in',
+    9: 'angle_delta'
 }
 COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
@@ -214,6 +215,27 @@ def get_torque(system, neighbours_indexes):
 
     return torque_total
 
+def update_velocity(system,forcematrix):
+    for i in range(N_PARTICLES):
+#        vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
+#        vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
+#        w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
+        system[i,COLUMN_REVERSE_MAPPING['vx']] += F[0] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['vy']] += F[1] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += T * time_step
+    return system
+
+def update_position(system):
+    for i in range(N_PARTICLES):
+#        x = system[i,COLUMN_REVERSE_MAPPING['x']]
+#        y = system[i,COLUMN_REVERSE_MAPPING['y']]
+        vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
+        vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
+        system[i,COLUMN_REVERSE_MAPPING['x']] += vx * time_step
+        system[i,COLUMN_REVERSE_MAPPING['y']] += vy * time_step
+    return system
+
+
 # -----------Plotting--------------------------
 def plot_system(system):
     fig = plt.figure()
@@ -234,6 +256,9 @@ def plot_system(system):
         ax.arrow(x,y, (r-head_length) * np.cos(angle), 
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
+        
+#def simulation_step():
+    
 
 # ------------Main------------------------------
 if __name__ == '__main__':
@@ -246,3 +271,4 @@ if __name__ == '__main__':
                                                          neighbours_indexes)
     force = get_forces(system, distances, directions)
     torque = get_torque(system, neighbours_indexes)
+    
