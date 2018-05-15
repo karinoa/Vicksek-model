@@ -286,14 +286,15 @@ def simulation_loop(system):#positions,velocities, more?):
         updt_velocities = update_velocity(system, force, time_step)
         updt_position = update_position(system, time_step)
         updt_orientation(system, time_step)
-    
 
-
+    return system
 # ------------Main------------------------------
 if __name__ == '__main__':
-    system = initialize_system()
+    system_init = initialize_system()
+    plot_system(system_init)
+    plt.show()
+    system = simulation_loop(system_init)
     plot_system(system)
-    simulation = simulation_loop(system)
     plt.show()
 
     
