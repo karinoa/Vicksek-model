@@ -29,12 +29,11 @@ assert LATTICE_LENGTH > LATTICE_WIDTH
 MEAN_RADIUS = 1
 STD_RADIUS = 1 / 10
 
-K = 2 #Spring constant
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 
 K_SELF = 1.0 
 K_BOUNDARY = 1.0
-K_REPULSION = 1.0
+K_REPULSION = 100.0
 
 TORQUE_IN = 1.0
 TORQUE_NOISE = 1.0
@@ -163,7 +162,7 @@ def get_forces(system,distances,directions):
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
         a = [0.0,0.0]
-        force_self, force_boundary,force_repulsion,fselfandboundary = (a,a,a,a)
+        force_self,force_boundary,force_repulsion,fselfandboundary = (a,a,a,a)
         #calculate self-propulsion force
         force_self = system[i,COLUMN_REVERSE_MAPPING['r']] * K_SELF
         #calculate boundary force
@@ -225,9 +224,6 @@ def get_torque(system, neighbours_indexes):
 
 def update_velocity(system,forcematrix, torque_total, time_step):
     for i in range(N_PARTICLES):
-#        vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
-#        vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
-#        w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
         system[i,COLUMN_REVERSE_MAPPING['vx']] += forcematrix[i][0] * time_step
         system[i,COLUMN_REVERSE_MAPPING['vy']] += forcematrix[i][1] * time_step
         system[i,COLUMN_REVERSE_MAPPING['v_angular']] += torque_total[i] * time_step
@@ -235,8 +231,6 @@ def update_velocity(system,forcematrix, torque_total, time_step):
 
 def update_position(system, time_step):
     for i in range(N_PARTICLES):
-#        x = system[i,COLUMN_REVERSE_MAPPING['x']]
-#        y = system[i,COLUMN_REVERSE_MAPPING['y']]
         vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
         vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
         system[i,COLUMN_REVERSE_MAPPING['x']] += vx * time_step
@@ -245,17 +239,13 @@ def update_position(system, time_step):
 
 def update_orientation(system, time_step):
     for i in range(N_PARTICLES):
-#        psi = system[i,COLUMN_REVERSE_MAPPING['orientation']]
         w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
         system[i,COLUMN_REVERSE_MAPPING['orientation']] += w * time_step
     return system
 
-def simulation_loop(system):
-    time_step= 0
-    step = 0
+def simulation_loop(system):  
     for step in range(SIMULATION_STEPS):
-        time_step += TIME_DELTA
-        step += 1
+        time_step = TIME_DELTA
         orientation = get_orientations(system)
         distances, directions = get_distances(system)
         neighbours_indexes = get_neighbours(system, distances)
