@@ -132,15 +132,29 @@ def update_angles(system, directionmatrix,neighbours_indexes):
 
     return system, angles_out
 
-def get_forces(system,distances,directions):
-    """Calcultes the net force on each particle due to its self propulsion,
-        the boundary condition and the repulsion due to other particles"""
+'''
+TO CHECK: parameters for F_self, F_boundary and F_repulsion
+F_self ~ 1
+F_boundary ~ 70
+F_repulsion ~ 0.1 (or 0 if there is no overlapping)
+-->
+Is Fboundary too large and F_repulsion too small?
 
+TO CHECK: parameters for torque_boundary, torque_noise, torque_align
+torque_boundary ~ 60-160
+torque_noise ~ 1
+torque_align ~ 250-300
+
+N.B. testingvalues.py now prints these values for each particle)
+'''    
+    
+def get_forces(system,distances,directions):
+    """Calculates the net force on each particle due to its self propulsion,
+        the boundary condition and the repulsion due to other particles"""
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
-        force_self, force_boundary,force_repulsion = (
-                                                [0.0,0.0],[0.0,0.0],[0.0,0.0])
-        fselfandboundary = [0.0,0.0]
+        a = [0.0,0.0]
+        force_self, force_boundary,force_repulsion,fselfandboundary = (a,a,a,a)
         #calculate self-propulsion force
         force_self = system[i,COLUMN_REVERSE_MAPPING['r']] * K_SELF
         #calculate boundary force
@@ -188,7 +202,7 @@ def get_torque(system, neighbours_indexes):
     for particle in range(N_PARTICLES):
         heavy_side = (system[particle, COLUMN_REVERSE_MAPPING[
                                                     'angle_boundary']] - 180)
-        if heavy_side > 0:
+        if heavy_side > 0:      #I think it should be 'greater or equal' instead of just 'greater'
             torque_boundary[particle] = TORQUE_IN * (
                     system[particle, COLUMN_REVERSE_MAPPING['angle_delta']])
         else:
