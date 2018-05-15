@@ -263,7 +263,8 @@ def get_order_parameter(system):
         system can be determined from it. A high order parameter it's 
         migration while a low is jammed or rotating"""
 
-    orientation_sum = np.sum(system[:, COLUMN_REVERSE_MAPPING['orientation']])
+    orientation_sum = np.abs(np.sum(
+                            system[:, COLUMN_REVERSE_MAPPING['orientation']]))
     order_parameter = (1 / N_PARTICLES) * orientation_sum
     return order_parameter
 #---------------- Simulation-----------------------------
