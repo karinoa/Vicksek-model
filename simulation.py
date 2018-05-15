@@ -257,20 +257,14 @@ def update_orientation(system, time_step):
     #okay so the calculation makes sense cuz cos^2+sen^2 = 1 -> 1/N_part = 0.009
     #so obviously I'm not understandig how to calculate the order parameter. 
     #According to the paper is the sum of the orientation vectors, which would 
-    #give a vector, not a number.
+    #give a vector not an scalar
 def get_order_parameter(system):
     """Calculates the orientational order parameter. The behaviour of the 
         system can be determined from it. A high order parameter it's 
         migration while a low is jammed or rotating"""
 
-    for particle in range(N_PARTICLES):
-        angle = system[particle,COLUMN_REVERSE_MAPPING['orientation']]
-        orientation = [np.cos(angle),np.sin(angle)]
-        orientation_sum = np.sqrt(np.power(
-                            np.sum(orientation[0]),2) + np.power(
-                            np.sum(orientation[1]),2))
-
-        order_parameter = 1 / N_PARTICLES * orientation_sum
+    orientation_sum = np.sum(system[:, COLUMN_REVERSE_MAPPING['orientation']])
+    order_parameter = (1 / N_PARTICLES) * orientation_sum
     return order_parameter
 #---------------- Simulation-----------------------------
 def simulation_loop(system):
