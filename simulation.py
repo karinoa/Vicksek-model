@@ -42,10 +42,10 @@ TORQUE_ALIGN = 1.0
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 50
+SIMULATION_STEPS = 100
 TIME_DELTA = 1e-2
 PRINT_EVERY_STEPS = 1
-PLOT_EVERY_STEPS = 5
+PLOT_EVERY_STEPS = 10
 
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
@@ -115,6 +115,11 @@ def get_neighbours(system,distances):
     return neighbours_indexes
 
 def update_angles(system, directionmatrix,neighbours_indexes):
+    """Obtains the angle formed between each particle and its neighbours; 
+        determines the boundary (angle_out) angle,the inner (angle_in) angle,
+        and the mismatch (angle_delta) between the inner angle and the 
+        orientation of the particle."""
+
     angles_out = [[] for _ in range(N_PARTICLES)]
     for particle in neighbours_indexes:
         for neighbour_a in range(len(particle)-1):
@@ -159,6 +164,7 @@ N.B. testingvalues.py now prints these values for each particle)
 def get_forces(system,distances,directions):
     """Calculates the net force on each particle due to its self propulsion,
         the boundary condition and the repulsion due to other particles"""
+
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
         a = [0.0,0.0]
@@ -191,7 +197,10 @@ def get_forces(system,distances,directions):
     return forcematrix
     
 def get_torque(system, neighbours_indexes):
-    """ Calculates the net torque """
+    """ Calculates the net torque on each particle due to the boundary 
+        conditions, the noise(Vicksek model) and the particles trying to 
+        align it's orientations"""
+
     torque_boundary = np.zeros(N_PARTICLES)
     torque_noise = np.zeros(N_PARTICLES)
     torque_align = np.zeros(N_PARTICLES)
@@ -217,8 +226,8 @@ def get_torque(system, neighbours_indexes):
             torque_boundary[particle] = 0
 
         torque_total[particle] = torque_boundary[particle] + (
-                                        torque_noise[particle]) + (
-                                        TORQUE_ALIGN * torque_align[particle])
+                                 torque_noise[particle]) + (
+                                 TORQUE_ALIGN * torque_align[particle])
 
     return torque_total
 
@@ -244,7 +253,23 @@ def update_orientation(system, time_step):
         system[i,COLUMN_REVERSE_MAPPING['orientation']] += w * time_step
     return system
 
-def simulation_loop(system):  
+#---------------Observables------------------------------
+def get_order_parameter(system):
+    """Calculates the orientational order parameter. The behaviour of the 
+        system can be determined from it. A high order parameter it's 
+        migration while a low is jammed or rotating"""
+
+    for i in range(N_PARTICLES):
+        angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+        orientation = [np.cos(angle),np.sin(angle)]
+        orientation_sum = np.sqrt(np.power(np.sum(orientation[0]),2) + np.power(np.sum(orientation[1]),2))
+
+    order_parameter = 1 / N_PARTICLES * orientation_sum
+    return order_parameter
+#---------------- Simulation-----------------------------
+def simulation_loop(system):
+    """Integrates the system for a given number of steps """
+
     for step in range(SIMULATION_STEPS):
         time_step = TIME_DELTA
         orientation = get_orientations(system)
@@ -259,19 +284,18 @@ def simulation_loop(system):
         updt_orientation = update_orientation(updt_position, time_step)
         
         if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
-                plot_system(updt_orientation)
-                plt.show()
-
+            print('Step',step)
+            order_parameter = get_order_parameter(update_orientation)
+            print(order_parameter)
+            plot_system(updt_orientation)
+            plt.show()
     return system
 
 # -----------Plotting--------------------------
 def plot_system(system):
+    """Plots the position and orientation of each particle"""
     fig = plt.figure()
     ax = fig.add_subplot(111)
-#    ax.set_xlim(-MEAN_RADIUS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
-#                MEAN_RADIUS)
-#    ax.set_ylim(-MEAN_RADIUS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
-#                MEAN_RADIUS)
     ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['x']]) + MEAN_RADIUS)
     ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['y']]) + MEAN_RADIUS)
     for x, y, r, angle in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
