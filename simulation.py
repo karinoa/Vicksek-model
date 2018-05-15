@@ -43,6 +43,7 @@ TORQUE_ALIGN = 1.0
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
+SIMULATION_STEPS = 50
 TIME_DELTA = 1e-2
 PRINT_EVERY_STEPS = 1
 PLOT_EVERY_STEPS = 5
@@ -222,17 +223,17 @@ def get_torque(system, neighbours_indexes):
 
     return torque_total
 
-def update_velocity(system,forcematrix):
+def update_velocity(system,forcematrix, torque_total, time_step):
     for i in range(N_PARTICLES):
 #        vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
 #        vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
 #        w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
-        system[i,COLUMN_REVERSE_MAPPING['vx']] += F[0] * time_step
-        system[i,COLUMN_REVERSE_MAPPING['vy']] += F[1] * time_step
-        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += T * time_step
+        system[i,COLUMN_REVERSE_MAPPING['vx']] += forcematrix[0] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['vy']] += forcematrix[1] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += torque_total * time_step
     return system
 
-def update_position(system):
+def update_position(system, time_step):
     for i in range(N_PARTICLES):
 #        x = system[i,COLUMN_REVERSE_MAPPING['x']]
 #        y = system[i,COLUMN_REVERSE_MAPPING['y']]
@@ -241,6 +242,13 @@ def update_position(system):
         system[i,COLUMN_REVERSE_MAPPING['x']] += vx * time_step
         system[i,COLUMN_REVERSE_MAPPING['y']] += vy * time_step
     return system
+
+def update_orientation(system, time_step):
+    for i in range(N_PARTICLES):
+#        psi = system[i,COLUMN_REVERSE_MAPPING['orientation']]
+        w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
+        system[i,COLUMN_REVERSE_MAPPING['orientation']] += w * time_step
+    return
 
 
 # -----------Plotting--------------------------
@@ -263,19 +271,29 @@ def plot_system(system):
         ax.arrow(x,y, (r-head_length) * np.cos(angle), 
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
-        
-def simulation_step():
+
+def simulation_loop(system):#positions,velocities, more?):
+    time_step= 0
+    step = 0
+    for step in range(SIMULATION_STEPS):
+        time_step += TIME_DELTA
+        step += 1
+        distances,directions = get_distances(system)
+        neighbours_indexes = get_neighbours(system,distances)
+        update_angles, angles_out = update_angles(system, directions, neighbours_indexes)
+        force = get_forces(system, distances, directions)
+        torque = get_torque(system,neighbours_indexes)
+        updt_velocities = update_velocity(system, force, time_step)
+        updt_position = update_position(system, time_step)
+        updt_orientation(system, time_step)
     
+
 
 # ------------Main------------------------------
 if __name__ == '__main__':
     system = initialize_system()
     plot_system(system)
+    simulation = simulation_loop(system)
     plt.show()
-    distances,directions = get_distances(system)
-    neighbours_indexes = get_neighbours(system,distances)
-    update_angles, angles_out= update_angles(system,directions, 
-                                                         neighbours_indexes)
-    force = get_forces(system, distances, directions)
-    torque = get_torque(system, neighbours_indexes)
+
     
