@@ -7,15 +7,19 @@ K_REPULSION = 1.0
 
 linear_viscosity = 1.0
 angular_viscosity = 1.0
+time_step = 0.001
+
 
 def Eulerpropstep(system):#positions,velocities, more?):
+    print(system)
     distances,directions = get_distances(system)    #get distances between particles and the direction of that vector
     neighbours = get_neighbours(system,distances)#get neighbours of each particle
     F = get_forces(system,distances, directions)
-    T = get_torque(system,distances, directions)
+    T = get_torque(system,neighbours)
     update_velocity(system,F)
     update_position(system)
     update_orientation(system)
+    print(system)
     #update position: position += timestep*velocity
     #update velocity: velocity += timestep*force
     #update orientation
