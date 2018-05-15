@@ -19,7 +19,7 @@ COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
 d = 2
 N_COLUMNS = len(COLUMN_MAPPING)
-N_PARTICLES = 110
+N_PARTICLES = 200
 LATTICE_WIDTH = 10
 LATTICE_LENGTH = int(N_PARTICLES / LATTICE_WIDTH)
 LATTICE_CONSTANT = 2
@@ -42,10 +42,10 @@ TORQUE_ALIGN = 1.0
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 100
+SIMULATION_STEPS = 1000
 TIME_DELTA = 1e-2
 PRINT_EVERY_STEPS = 1
-PLOT_EVERY_STEPS = 10
+PLOT_EVERY_STEPS = 100
 
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
@@ -70,13 +70,6 @@ def initialize_system():
         loc=MEAN_RADIUS,
         scale=STD_RADIUS,
         size=N_PARTICLES)
-    return system
-
-def get_orientations(system):
-    for x, y in zip(system[:,COLUMN_REVERSE_MAPPING['x']], 
-                    system[:,COLUMN_REVERSE_MAPPING['y']]):
-
-        system[:,COLUMN_REVERSE_MAPPING['orientation']] = np.arctan2(y,x)
     return system
 
 def get_distances(system):
@@ -198,7 +191,7 @@ def get_forces(system,distances,directions):
     
 def get_torque(system, neighbours_indexes):
     """ Calculates the net torque on each particle due to the boundary 
-        conditions, the noise(Vicksek model) and the particles trying to 
+        conditions, the noise(Vicksek type) and the particles trying to 
         align it's orientations"""
 
     torque_boundary = np.zeros(N_PARTICLES)
@@ -264,7 +257,7 @@ def get_order_parameter(system):
         migration while a low is jammed or rotating"""
 
     orientation_sum = np.abs(np.sum(
-                            system[:, COLUMN_REVERSE_MAPPING['orientation']]))
+                            np.deg2rad(system[:, COLUMN_REVERSE_MAPPING['orientation']])))
     order_parameter = (1 / N_PARTICLES) * orientation_sum
     return order_parameter
 #---------------- Simulation-----------------------------
@@ -273,10 +266,9 @@ def simulation_loop(system):
 
     for step in range(SIMULATION_STEPS):
         time_step = TIME_DELTA
-        orientation = get_orientations(system)
         distances, directions = get_distances(system)
         neighbours_indexes = get_neighbours(system, distances)
-        angles, angles_out = update_angles(orientation, directions, 
+        angles, angles_out = update_angles(system, directions, 
                                                            neighbours_indexes)
         forces = get_forces(system, distances, directions)
         torques = get_torque(system,neighbours_indexes)
