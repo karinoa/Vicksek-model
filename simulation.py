@@ -248,8 +248,29 @@ def update_orientation(system, time_step):
 #        psi = system[i,COLUMN_REVERSE_MAPPING['orientation']]
         w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
         system[i,COLUMN_REVERSE_MAPPING['orientation']] += w * time_step
-    return
+    return system
 
+def simulation_loop(system):
+    time_step= 0
+    step = 0
+    for step in range(SIMULATION_STEPS):
+        time_step += TIME_DELTA
+        step += 1
+        orientation = get_orientations(system)
+        distances, directions = get_distances(system)
+        neighbours_indexes = get_neighbours(system, distances)
+        angles, angles_out = update_angles(orientation, directions, neighbours_indexes)
+        forces = get_forces(system, distances, directions)
+        torques = get_torque(system,neighbours_indexes)
+        updt_velocities = update_velocity(system, forces, torques, time_step)
+        updt_position = update_position(updt_velocities, time_step)
+        updt_orientation = update_orientation(updt_position, time_step)
+        
+        if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
+                plot_system(updt_orientation)
+                plt.show()
+
+    return system
 
 # -----------Plotting--------------------------
 def plot_system(system):
@@ -272,29 +293,12 @@ def plot_system(system):
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
 
-def simulation_loop(system):#positions,velocities, more?):
-    time_step= 0
-    step = 0
-    for step in range(SIMULATION_STEPS):
-        time_step += TIME_DELTA
-        step += 1
-        distances,directions = get_distances(system)
-        neighbours_indexes = get_neighbours(system,distances)
-        update_angles, angles_out = update_angles(system, directions, neighbours_indexes)
-        force = get_forces(system, distances, directions)
-        torque = get_torque(system,neighbours_indexes)
-        updt_velocities = update_velocity(system, force, time_step)
-        updt_position = update_position(system, time_step)
-        updt_orientation(system, time_step)
-
-    return system
 # ------------Main------------------------------
 if __name__ == '__main__':
-    system_init = initialize_system()
-    plot_system(system_init)
-    plt.show()
-    system = simulation_loop(system_init)
+    system = initialize_system()
     plot_system(system)
     plt.show()
+    simulation = simulation_loop(system)
+
 
     
