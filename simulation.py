@@ -40,6 +40,13 @@ TORQUE_IN = 1.0
 TORQUE_NOISE = 1.0
 TORQUE_ALIGN = 1.0
 
+LINEAR_VISCOSITY = 1.0
+ANGULAR_VISCOSITY = 1.0
+
+TIME_DELTA = 1e-2
+PRINT_EVERY_STEPS = 1
+PLOT_EVERY_STEPS = 5
+
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
         slightly deviated from the exact lattice positions"""
@@ -257,7 +264,7 @@ def plot_system(system):
                          (r-head_length) * np.sin(angle), head_width=0.05, 
                          head_length = head_length, fc='k', ec='k')
         
-#def simulation_step():
+def simulation_step():
     
 
 # ------------Main------------------------------
