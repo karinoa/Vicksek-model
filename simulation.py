@@ -210,7 +210,7 @@ def get_torque(system, neighbours_indexes):
     for particle in range(N_PARTICLES):
         heavy_side = (system[particle, COLUMN_REVERSE_MAPPING[
                                                     'angle_boundary']] - 180)
-        if heavy_side > 0:      #I think it should be 'greater or equal' instead of just 'greater'
+        if heavy_side >= 0:
             torque_boundary[particle] = TORQUE_IN * (
                     system[particle, COLUMN_REVERSE_MAPPING['angle_delta']])
         else:
@@ -226,7 +226,8 @@ def update_velocity(system,forcematrix, torque_total, time_step):
     for i in range(N_PARTICLES):
         system[i,COLUMN_REVERSE_MAPPING['vx']] += forcematrix[i][0] * time_step
         system[i,COLUMN_REVERSE_MAPPING['vy']] += forcematrix[i][1] * time_step
-        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += torque_total[i] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += (
+                                                torque_total[i] * time_step)
     return system
 
 def update_position(system, time_step):
@@ -249,7 +250,8 @@ def simulation_loop(system):
         orientation = get_orientations(system)
         distances, directions = get_distances(system)
         neighbours_indexes = get_neighbours(system, distances)
-        angles, angles_out = update_angles(orientation, directions, neighbours_indexes)
+        angles, angles_out = update_angles(orientation, directions, 
+                                                           neighbours_indexes)
         forces = get_forces(system, distances, directions)
         torques = get_torque(system,neighbours_indexes)
         updt_velocities = update_velocity(system, forces, torques, time_step)
@@ -266,10 +268,12 @@ def simulation_loop(system):
 def plot_system(system):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlim(-MEAN_RADIUS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
-                MEAN_RADIUS)
-    ax.set_ylim(-MEAN_RADIUS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
-                MEAN_RADIUS)
+#    ax.set_xlim(-MEAN_RADIUS, (LATTICE_LENGTH * LATTICE_CONSTANT) +
+#                MEAN_RADIUS)
+#    ax.set_ylim(-MEAN_RADIUS, (LATTICE_WIDTH * LATTICE_CONSTANT) +
+#                MEAN_RADIUS)
+    ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['x']]) + MEAN_RADIUS)
+    ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['y']]) + MEAN_RADIUS)
     for x, y, r, angle in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
                        system[:, COLUMN_REVERSE_MAPPING['y']],
                        system[:, COLUMN_REVERSE_MAPPING['r']],
