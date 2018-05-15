@@ -10,16 +10,16 @@ angular_viscosity = 1.0
 time_step = 0.001
 
 
-def Eulerpropstep(system):#positions,velocities, more?):
-    print(system)
-    distances,directions = get_distances(system)    #get distances between particles and the direction of that vector
-    neighbours = get_neighbours(system,distances)#get neighbours of each particle
+def Eulerpropstep(system):
+    #print(system)
+    distances,directions = get_distances(system)
+    neighbours = get_neighbours(system,distances)
     F = get_forces(system,distances, directions)
     T = get_torque(system,neighbours)
     update_velocity(system,F)
     update_position(system)
     update_orientation(system)
-    print(system)
+    #print(system)
     #update position: position += timestep*velocity
     #update velocity: velocity += timestep*force
     #update orientation
@@ -28,29 +28,23 @@ def Eulerpropstep(system):#positions,velocities, more?):
     
 def update_velocity(system,F):
     for i in range(N_PARTICLES):
-        vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
-        vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
-        w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
-        system[i,COLUMN_REVERSE_MAPPING['vx']] = vx + F[0]*time_step
-        system[i,COLUMN_REVERSE_MAPPING['vy']] = vy + F[1]*time_step
-        system[i,COLUMN_REVERSE_MAPPING['v_angular']] = w + T*time_step
+        system[i,COLUMN_REVERSE_MAPPING['vx']] += F[i][0]*time_step
+        system[i,COLUMN_REVERSE_MAPPING['vy']] += F[i][1]*time_step
+        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += T[i]*time_step
     return
 
 def update_position(system):
     for i in range(N_PARTICLES):
-        x = system[i,COLUMN_REVERSE_MAPPING['x']]
-        y = system[i,COLUMN_REVERSE_MAPPING['y']]
         vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
         vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
-        system[i,COLUMN_REVERSE_MAPPING['x']] = x + vx*time_step
-        system[i,COLUMN_REVERSE_MAPPING['y']] = y + vy*time_step
+        system[i,COLUMN_REVERSE_MAPPING['x']] += vx*time_step
+        system[i,COLUMN_REVERSE_MAPPING['y']] += vy*time_step
     return
         
 def update_orientation(system):
     for i in range(N_PARTICLES):
-        psi = system[i,COLUMN_REVERSE_MAPPING['orientation']]
         w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
-        system[i,COLUMN_REVERSE_MAPPING['orientation']] = psi + w*time_step
+        system[i,COLUMN_REVERSE_MAPPING['orientation']] += w*time_step
     return
     
 def get_forces(system,distances,directions):
@@ -83,7 +77,7 @@ def get_forces(system,distances,directions):
         angle = system[i,COLUMN_REVERSE_MAPPING['orientation']]
         orientation = [np.cos(angle),np.sin(angle)] 
         fselfandboundary[0] = (force_self + force_boundary) * orientation[0]
-        fselfandboundary[1] = (force_self + force_boundary) * orientation[1]
+        fselfandboundary[1] = (force_self + force_boundary) * orientation[1]           
         forcematrix[i] = np.add(fselfandboundary, force_repulsion)
     return forcematrix
 

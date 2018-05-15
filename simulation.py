@@ -228,9 +228,9 @@ def update_velocity(system,forcematrix, torque_total, time_step):
 #        vx = system[i,COLUMN_REVERSE_MAPPING['vx']]
 #        vy = system[i,COLUMN_REVERSE_MAPPING['vy']]
 #        w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
-        system[i,COLUMN_REVERSE_MAPPING['vx']] += forcematrix[0] * time_step
-        system[i,COLUMN_REVERSE_MAPPING['vy']] += forcematrix[1] * time_step
-        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += torque_total * time_step
+        system[i,COLUMN_REVERSE_MAPPING['vx']] += forcematrix[i][0] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['vy']] += forcematrix[i][1] * time_step
+        system[i,COLUMN_REVERSE_MAPPING['v_angular']] += torque_total[i] * time_step
     return system
 
 def update_position(system, time_step):
