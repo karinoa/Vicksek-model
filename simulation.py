@@ -31,21 +31,21 @@ STD_RADIUS = 1 / 10
 
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 
-K_SELF = 1.0 
+K_SELF = 10.0 
 K_BOUNDARY = .1
 K_REPULSION = 100.0
 
 TORQUE_IN = 1.0
 TORQUE_NOISE = 1.0
-TORQUE_ALIGN = 1.0
+TORQUE_ALIGN = 10.0
 
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 3
+SIMULATION_STEPS = 200
 TIME_DELTA = 1e-2
 PRINT_EVERY_STEPS = 1
-PLOT_EVERY_STEPS = 1
+PLOT_EVERY_STEPS = 10
 
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
@@ -192,7 +192,7 @@ def get_forces(system,distances,directions,neighbours):
 def get_torque(system, neighbours_indexes):
     """ Calculates the net torque on each particle due to the boundary 
         conditions, the noise(Vicksek type) and the particles trying to 
-        align it's orientations"""
+        align its orientations"""
 
     torque_boundary = np.zeros(N_PARTICLES)
     torque_noise = np.zeros(N_PARTICLES)
@@ -244,6 +244,8 @@ def update_orientation(system, time_step):
     for i in range(N_PARTICLES):
         w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
         system[i,COLUMN_REVERSE_MAPPING['orientation']] += w * time_step
+        system[i,COLUMN_REVERSE_MAPPING['orientation']] = (
+            system[i,COLUMN_REVERSE_MAPPING['orientation']] % 360.)
     return system
 
 #---------------Observables------------------------------
@@ -257,7 +259,7 @@ def get_order_parameter(system):
         migration while a low is jammed or rotating"""
     orientation_sum = 0.0 #reset
     orientation_sum = np.abs(np.sum(
-                            np.deg2rad(system[:, COLUMN_REVERSE_MAPPING['orientation']])))
+        system[:, COLUMN_REVERSE_MAPPING['orientation']]/360.0))
     order_parameter = (1 / N_PARTICLES) * orientation_sum
     return order_parameter
 #---------------- Simulation-----------------------------

@@ -45,6 +45,8 @@ def update_orientation(system):
     for i in range(N_PARTICLES):
         w  = system[i,COLUMN_REVERSE_MAPPING['v_angular']]
         system[i,COLUMN_REVERSE_MAPPING['orientation']] += w*time_step
+        system[i,COLUMN_REVERSE_MAPPING['orientation']] = (
+            system[i,COLUMN_REVERSE_MAPPING['orientation']]%360.)
     return
     
 def get_forces(system,distances,directions,neighbours):
