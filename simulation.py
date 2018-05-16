@@ -26,6 +26,7 @@ LATTICE_CONSTANT = 2
 assert LATTICE_LENGTH * LATTICE_WIDTH == N_PARTICLES
 assert LATTICE_LENGTH > LATTICE_WIDTH
 
+PLOT_MARGIN = 3
 MEAN_RADIUS = 1
 STD_RADIUS = 1 / 10
 
@@ -42,7 +43,7 @@ TORQUE_ALIGN = 10.0
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 200
+SIMULATION_STEPS = 100
 TIME_DELTA = 1e-2
 PRINT_EVERY_STEPS = 1
 PLOT_EVERY_STEPS = 10
@@ -248,6 +249,12 @@ def update_orientation(system, time_step):
             system[i,COLUMN_REVERSE_MAPPING['orientation']] % 360.)
     return system
 
+#def writeData(filename, data):
+#    """Writes data at each step to a file"""
+#    with open(filename, "a") as output:
+#        for point in data:
+#            output.write("%s\n" % point)
+
 #---------------Observables------------------------------
 def get_order_parameter(system):
     """Calculates the orientational order parameter. The behaviour of the 
@@ -262,10 +269,17 @@ def get_order_parameter(system):
 def get_cluster_velocity(system,order_parameter):
     velocity_cluster = (K_SELF / K_REPULSION ) * order_parameter
     return velocity_cluster
+
 #---------------- Simulation-----------------------------
 def simulation_loop(system):
     """Integrates the system for a given number of steps """
-    
+    outfile = open('Penguins_{particles}.txt'.format(particles=N_PARTICLES),'w')
+    outfile.write(
+            'N_PARTICLES={Nparticles} SIMULATION_STEPS={iterations}\n'.format(
+                    Nparticles=N_PARTICLES, iterations=SIMULATION_STEPS))
+    outfile.write('')
+    outfile.write('current_step    order_parameter    velocity_cluster')
+    outfile.write('')
     for step in range(SIMULATION_STEPS):
         time_step = TIME_DELTA
         distances, directions = get_distances(system)
@@ -282,12 +296,15 @@ def simulation_loop(system):
         
         if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
             print('Step',step)
-
             print('Order Parameter =', order_parameter, 
                   'Velocity cluster=', velocity_cluster)
+            outfile.write('{step}    {orderpar}    {clustervel}\n'.format(
+                                        step=step, 
+                                        orderpar = '%.4f' %order_parameter, 
+                                        clustervel = '%.4f' %velocity_cluster))
             plot_system(updt_orientation)
             plt.title('Collective Dynamics Penguins,($\phi = {order})'.format(
-                                                    order = '%.4f' %order_parameter))
+                                            order = '%.4f' %order_parameter))
             plt.savefig('penguin_{particles}_{step}.png'.format(
                                             step=step, particles=N_PARTICLES))
     return system
@@ -297,8 +314,15 @@ def plot_system(system):
     """Plots the position and orientation of each particle"""
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - 3 * MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['x']]) + 3 * MEAN_RADIUS)
-    ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - 3 * MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['y']]) + 3 * MEAN_RADIUS)
+    plt.title('Collective Dynamics Penguins,($\phi = 0)')
+    ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - (
+                                            PLOT_MARGIN * MEAN_RADIUS),
+                max(system[:,COLUMN_REVERSE_MAPPING['x']]) + (
+                                            PLOT_MARGIN * MEAN_RADIUS))
+    ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - (
+                                            PLOT_MARGIN * MEAN_RADIUS),
+                max(system[:,COLUMN_REVERSE_MAPPING['y']]) + (
+                                            PLOT_MARGIN * MEAN_RADIUS))
     plt.xlabel('x position')
     plt.ylabel('y position')
     for x, y, r, angle in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
