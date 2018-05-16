@@ -258,6 +258,10 @@ def get_order_parameter(system):
         system[:, COLUMN_REVERSE_MAPPING['orientation']] / 360.0))
     order_parameter = (1 / N_PARTICLES) * orientation_sum
     return order_parameter
+
+def get_cluster_velocity(system,order_parameter):
+    velocity_cluster = (K_SELF / K_REPULSION ) * order_parameter
+    return velocity_cluster
 #---------------- Simulation-----------------------------
 def simulation_loop(system):
     """Integrates the system for a given number of steps """
@@ -274,11 +278,13 @@ def simulation_loop(system):
         updt_position = update_position(updt_velocities, time_step)
         updt_orientation = update_orientation(updt_position, time_step)
         order_parameter = get_order_parameter(updt_orientation)
+        velocity_cluster = get_cluster_velocity(system, order_parameter)
         
         if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
             print('Step',step)
 
-            print(order_parameter)
+            print('Order Parameter =', order_parameter, 
+                  'Velocity cluster=', velocity_cluster)
             plot_system(updt_orientation)
             plt.title('Collective Dynamics Penguins,($\phi = {order})'.format(
                                                     order = '%.4f' %order_parameter))
