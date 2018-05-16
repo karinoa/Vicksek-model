@@ -19,7 +19,7 @@ COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
 d = 2
 N_COLUMNS = len(COLUMN_MAPPING)
-N_PARTICLES = 200
+N_PARTICLES = 110
 LATTICE_WIDTH = 10
 LATTICE_LENGTH = int(N_PARTICLES / LATTICE_WIDTH)
 LATTICE_CONSTANT = 2
@@ -263,7 +263,7 @@ def get_order_parameter(system):
 #---------------- Simulation-----------------------------
 def simulation_loop(system):
     """Integrates the system for a given number of steps """
-
+    
     for step in range(SIMULATION_STEPS):
         time_step = TIME_DELTA
         distances, directions = get_distances(system)
@@ -282,7 +282,8 @@ def simulation_loop(system):
 
             print(order_parameter)
             plot_system(updt_orientation)
-            plt.show()
+            plt.savefig('penguin_{particles}_{step}.png'.format(
+                                            step=step, particles=N_PARTICLES))
     return system
 
 # -----------Plotting--------------------------
