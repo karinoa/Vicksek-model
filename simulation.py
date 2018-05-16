@@ -249,17 +249,13 @@ def update_orientation(system, time_step):
     return system
 
 #---------------Observables------------------------------
-    #okay so the calculation makes sense cuz cos^2+sen^2 = 1 -> 1/N_part = 0.009
-    #so obviously I'm not understandig how to calculate the order parameter. 
-    #According to the paper is the sum of the orientation vectors, which would 
-    #give a vector not an scalar
 def get_order_parameter(system):
     """Calculates the orientational order parameter. The behaviour of the 
         system can be determined from it. A high order parameter it's 
         migration while a low is jammed or rotating"""
     orientation_sum = 0.0 #reset
     orientation_sum = np.abs(np.sum(
-        system[:, COLUMN_REVERSE_MAPPING['orientation']]/360.0))
+        system[:, COLUMN_REVERSE_MAPPING['orientation']] / 360.0))
     order_parameter = (1 / N_PARTICLES) * orientation_sum
     return order_parameter
 #---------------- Simulation-----------------------------
@@ -284,6 +280,8 @@ def simulation_loop(system):
 
             print(order_parameter)
             plot_system(updt_orientation)
+            plt.title('Collective Dynamics Penguins,($\phi = {order})'.format(
+                                                    order = '%.4f' %order_parameter))
             plt.savefig('penguin_{particles}_{step}.png'.format(
                                             step=step, particles=N_PARTICLES))
     return system
@@ -293,11 +291,10 @@ def plot_system(system):
     """Plots the position and orientation of each particle"""
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['x']]) + MEAN_RADIUS)
-    ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['y']]) + MEAN_RADIUS)
+    ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - 3 * MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['x']]) + 3 * MEAN_RADIUS)
+    ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - 3 * MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['y']]) + 3 * MEAN_RADIUS)
     plt.xlabel('x position')
     plt.ylabel('y position')
-    plt.title('Collective Dynamics of Penguins')
     for x, y, r, angle in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
                        system[:, COLUMN_REVERSE_MAPPING['y']],
                        system[:, COLUMN_REVERSE_MAPPING['r']],
