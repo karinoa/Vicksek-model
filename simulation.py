@@ -32,7 +32,7 @@ STD_RADIUS = 1 / 10
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 
 K_SELF = 1.0 
-K_BOUNDARY = 1.0
+K_BOUNDARY = .1
 K_REPULSION = 100.0
 
 TORQUE_IN = 1.0
@@ -42,10 +42,10 @@ TORQUE_ALIGN = 1.0
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 1000
+SIMULATION_STEPS = 3
 TIME_DELTA = 1e-2
 PRINT_EVERY_STEPS = 1
-PLOT_EVERY_STEPS = 100
+PLOT_EVERY_STEPS = 1
 
 def initialize_system():
     """Initializes the system in a rectangle lattice with particles 
@@ -154,7 +154,7 @@ torque_align ~ 250-300
 N.B. testingvalues.py now prints these values for each particle)
 '''    
     
-def get_forces(system,distances,directions):
+def get_forces(system,distances,directions,neighbours):
     """Calculates the net force on each particle due to its self propulsion,
         the boundary condition and the repulsion due to other particles"""
 
@@ -171,7 +171,7 @@ def get_forces(system,distances,directions):
             force_boundary = K_BOUNDARY*(outer_angle - 180.0)
         #calculate repulsion force
         repulsion = np.zeros(shape=(N_PARTICLES,2))
-        for j in range(N_PARTICLES):
+        for j in neighbours[i]:
             ri = system[i,COLUMN_REVERSE_MAPPING['r']]
             rj = system[j,COLUMN_REVERSE_MAPPING['r']]
             rsum = ri + rj
@@ -255,7 +255,7 @@ def get_order_parameter(system):
     """Calculates the orientational order parameter. The behaviour of the 
         system can be determined from it. A high order parameter it's 
         migration while a low is jammed or rotating"""
-
+    orientation_sum = 0.0 #reset
     orientation_sum = np.abs(np.sum(
                             np.deg2rad(system[:, COLUMN_REVERSE_MAPPING['orientation']])))
     order_parameter = (1 / N_PARTICLES) * orientation_sum
@@ -270,7 +270,7 @@ def simulation_loop(system):
         neighbours_indexes = get_neighbours(system, distances)
         angles, angles_out = update_angles(system, directions, 
                                                            neighbours_indexes)
-        forces = get_forces(system, distances, directions)
+        forces = get_forces(system, distances, directions,neighbours_indexes)
         torques = get_torque(system,neighbours_indexes)
         updt_velocities = update_velocity(system, forces, torques, time_step)
         updt_position = update_position(updt_velocities, time_step)
