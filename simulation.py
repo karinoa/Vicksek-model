@@ -295,6 +295,9 @@ def plot_system(system):
     ax = fig.add_subplot(111)
     ax.set_xlim(min(system[:,COLUMN_REVERSE_MAPPING['x']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['x']]) + MEAN_RADIUS)
     ax.set_ylim(min(system[:,COLUMN_REVERSE_MAPPING['y']]) - MEAN_RADIUS, max(system[:,COLUMN_REVERSE_MAPPING['y']]) + MEAN_RADIUS)
+    plt.xlabel('x position')
+    plt.ylabel('y position')
+    plt.title('Collective Dynamics of Penguins')
     for x, y, r, angle in zip(system[:, COLUMN_REVERSE_MAPPING['x']],
                        system[:, COLUMN_REVERSE_MAPPING['y']],
                        system[:, COLUMN_REVERSE_MAPPING['r']],
