@@ -19,7 +19,7 @@ COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
 d = 2
 N_COLUMNS = len(COLUMN_MAPPING)
-N_PARTICLES = 500
+N_PARTICLES = 110
 LATTICE_WIDTH = 10
 LATTICE_LENGTH = int(N_PARTICLES / LATTICE_WIDTH)
 LATTICE_CONSTANT = 2
@@ -42,7 +42,7 @@ TORQUE_ALIGN = 10.0
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 200
+SIMULATION_STEPS = 3
 TIME_DELTA = 1e-2
 #PRINT_EVERY_STEPS = 10 currently not used
 PLOT_EVERY_STEPS = 20
@@ -267,7 +267,7 @@ def get_cluster_velocity(system,order_parameter):
 #---------------- Simulation-----------------------------
 def simulation_loop(system):
     """Integrates the system for a given number of steps """
-    
+
     outfile = open('Penguins_{particles}.txt'.format(
                                                 particles=N_PARTICLES),'w')
     outfile.write(
@@ -275,7 +275,7 @@ def simulation_loop(system):
                     Nparticles=N_PARTICLES, iterations=SIMULATION_STEPS))
     outfile.write('')
     outfile.write(
-            'LINEAR_VISCOSITY={viscosity} ANGULAR_VISCOSITY={angular}\n'.format(
+            'LINEAR_VISCOSITY={linear} ANGULAR_VISCOSITY={angular}\n'.format(
                     linear=LINEAR_VISCOSITY, angular=ANGULAR_VISCOSITY))
     outfile.write('')
     outfile.write(
@@ -288,6 +288,7 @@ def simulation_loop(system):
     outfile.write('')
     outfile.write('current_step    order_parameter    velocity_cluster')
     outfile.write('')
+
     for step in range(SIMULATION_STEPS):
         time_step = TIME_DELTA
         distances, directions = get_distances(system)
