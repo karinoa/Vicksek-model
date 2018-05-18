@@ -19,7 +19,7 @@ COLUMN_REVERSE_MAPPING = {v: k for (k, v) in COLUMN_MAPPING.items()}
 
 d = 2
 N_COLUMNS = len(COLUMN_MAPPING)
-N_PARTICLES = 110
+N_PARTICLES = 800
 LATTICE_WIDTH = 10
 LATTICE_LENGTH = int(N_PARTICLES / LATTICE_WIDTH)
 LATTICE_CONSTANT = 2
@@ -31,21 +31,21 @@ STD_RADIUS = 1 / 10
 
 NEIGHBOUR_CUTOFF = 2.7 * MEAN_RADIUS
 
-K_SELF = 10.0 
-K_BOUNDARY = .5
+K_SELF = 0.08 
+K_BOUNDARY = 0.3
 K_REPULSION = 100.0
 
-TORQUE_IN = 5
-TORQUE_NOISE = 1.0
-TORQUE_ALIGN = 10.0
+TORQUE_IN = 3
+TORQUE_NOISE = 0.03
+TORQUE_ALIGN = 0.8
 
 LINEAR_VISCOSITY = 1.0
 ANGULAR_VISCOSITY = 1.0
 
-SIMULATION_STEPS = 3
+SIMULATION_STEPS = 1000
 TIME_DELTA = 1e-2
 #PRINT_EVERY_STEPS = 10 currently not used
-PLOT_EVERY_STEPS = 20
+PLOT_EVERY_STEPS = 50
 PLOT_MARGIN = 3
 
 def initialize_system():
@@ -136,29 +136,11 @@ def update_angles(system, directionmatrix,neighbours_indexes):
         system[particle, COLUMN_REVERSE_MAPPING['angle_delta']] = (
                 system[particle, COLUMN_REVERSE_MAPPING['angle_in']]- (
                 system[particle, COLUMN_REVERSE_MAPPING['orientation']]))
-
     return system, angles_out
-
-'''
-TO CHECK: parameters for F_self, F_boundary and F_repulsion
-F_self ~ 1
-F_boundary ~ 70
-F_repulsion ~ 0.1 (or 0 if there is no overlapping)
--->
-Is Fboundary too large and F_repulsion too small?
-
-TO CHECK: parameters for torque_boundary, torque_noise, torque_align
-torque_boundary ~ 60-160
-torque_noise ~ 1
-torque_align ~ 250-300
-
-N.B. testingvalues.py now prints these values for each particle)
-'''    
     
 def get_forces(system,distances,directions,neighbours):
     """Calculates the net force on each particle due to its self propulsion,
         the boundary condition and the repulsion due to other particles"""
-
     forcematrix = np.zeros(shape=(N_PARTICLES,2))
     for i in range(N_PARTICLES):
         a = [0.0,0.0]
@@ -168,7 +150,7 @@ def get_forces(system,distances,directions,neighbours):
         #calculate boundary force
         outer_angle = system[i,COLUMN_REVERSE_MAPPING['angle_boundary']]
         #if particle is part of the boundary
-        if np.greater_equal(outer_angle, 180.0): 
+        if np.greater_equal(outer_angle, 180.0):
             force_boundary = K_BOUNDARY*(outer_angle - 180.0)
         #calculate repulsion force
         repulsion = np.zeros(shape=(N_PARTICLES,2))
@@ -188,6 +170,7 @@ def get_forces(system,distances,directions,neighbours):
         fselfandboundary[0] = (force_self + force_boundary) * orientation[0]
         fselfandboundary[1] = (force_self + force_boundary) * orientation[1]
         forcematrix[i] = np.add(fselfandboundary, force_repulsion)
+        
     return forcematrix
     
 def get_torque(system, neighbours_indexes):
@@ -305,8 +288,6 @@ def simulation_loop(system):
         
         if step == SIMULATION_STEPS - 1 or step % PLOT_EVERY_STEPS == 0:
             print('Step',step)
-#            print('Order Parameter =', order_parameter, 
-#                  'Velocity cluster=', velocity_cluster)
             outfile.write('{step}    {orderpar}    {clustervel}\n'.format(
                                         step=step, 
                                         orderpar = '%.4f' %order_parameter, 
